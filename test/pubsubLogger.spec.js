@@ -35,6 +35,7 @@ describe('pubsubLogger', () => {
 
     it('foo', () => {
       loggerA.pubsub.subscribe('A')
+      loggerA.on('data', () => console.log('sdkfj'))
     })
   })
 })

@@ -3,13 +3,14 @@
 const EE = require('events').EventEmitter
 const TestNode = require('libp2p-pstn-node')
 const R = require('ramda')
+const util = require('util')
 
 const mountNodeLogger = require('./nodeLogger')
 const mountPubsubLogger = require('./pubsubLogger')
 const { logger } = require('./config')
 const { LoggerError } = require('./errors')
 
-module.exports = class Logger {
+const Logger = class Logger {
   constructor(testNode, pubsubStrategy) {
     if (!(this instanceof Logger)) {
       return new Logger(testNode, pubsub)
@@ -23,9 +24,9 @@ module.exports = class Logger {
       throw new LoggerError('Missing <pubsubStrategy>')
     }
 
-    // Add an eventEmitter to the Logger
-    EE.call(this)
+    // this.on('data', console.log)
 
+    this.id = testNode.peerInfo.id.toB58String()
     this.node = testNode
     this.pubsub = pubsubStrategy(this.node.libp2p)
 
@@ -33,3 +34,8 @@ module.exports = class Logger {
     mountPubsubLogger(this)
   }
 }
+
+// Add event emitter
+util.inherits(Logger, EE)
+
+module.exports = Logger
