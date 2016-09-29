@@ -27,6 +27,7 @@
   "homepage": "https://github.com/gavinmcdermott/js-libp2p-pstn-logger#readme",
   "dependencies": {
     "debug": "2.2.0",
+    "libp2p-floodsub": "0.3.0",
     "libp2p-pstn-node": "1.0.0",
     "ramda": "0.22.1"
   },
