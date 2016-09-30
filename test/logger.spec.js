@@ -16,6 +16,8 @@ const noop = () => {}
 
 describe('Logger', () => {
   let loggerA
+  let loggerB
+
   let loggers = R.range(0, 1)
 
   const topicA = 'AAA'
@@ -26,6 +28,7 @@ describe('Logger', () => {
   before(() => {
     const startFns = mapIndexed((n, idx) => {
       let node = new TestNode({ id: keys[idx], portOffset: idx })
+      // node.libp2p.swarm.on('peer-mux-established', () => console.log('WORD'))
       loggers[idx] = new Logger(node, PS)
       return node.start
     }, loggers)
@@ -66,14 +69,11 @@ describe('Logger', () => {
     })
   })
 
-  describe('Logger.pubsub events', () => {
+  describe('Logger.pubsub event capture', () => {
+    // this function is defined and reassigned in each test block
     let validateEvent = noop
 
     describe('subscribe', () => {
-      before(() => {
-        loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
-      })
-
       after(() => {
         loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
       })
@@ -106,10 +106,6 @@ describe('Logger', () => {
     })
 
     describe('publish', () => {
-      before(() => {
-        loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
-      })
-
       after(() => {
         loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
       })
@@ -117,7 +113,7 @@ describe('Logger', () => {
       it('success', () => {
         let counter = 0
 
-        const validateEvent = (data) => {
+        validateEvent = (data) => {
           const loggerId = data.loggerId
           const event = data.event
           const topic = data.args[0]
@@ -135,7 +131,40 @@ describe('Logger', () => {
 
         expect(counter).to.equal(0)
 
-        loggerA.pubsub.publish(topicA)
+        loggerA.pubsub.publish(topicA, new Buffer('Hey there!'))
+
+        expect(counter).to.equal(1)
+      })
+    })
+
+    describe('unsubscribe', () => {
+      after(() => {
+        loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
+      })
+
+      it('success', () => {
+        let counter = 0
+
+        validateEvent = (data) => {
+          const loggerId = data.loggerId
+          const event = data.event
+          const topic = data.args[0]
+          const timestamp = data.timestamp
+
+
+          expect(loggerId).to.equal(loggerA.id)
+          expect(event).to.equal('unsubscribe')
+          expect(topic).to.equal(topicA)
+          expect(timestamp).to.exist
+
+          counter++
+        }
+
+        expect(counter).to.equal(0)
+
+        loggerA.pubsub.subscribe(topicA)
+        loggerA.on(LOGGER_EVENT_BASE, validateEvent)
+        loggerA.pubsub.unsubscribe(topicA)
 
         expect(counter).to.equal(1)
       })

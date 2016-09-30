@@ -2,11 +2,13 @@
 
 const R = require('ramda')
 const { pubsubLogger, LOGGER_EVENT_BASE } = require('./config')
+const { LoggerError } = require('./errors')
 
 module.exports = (logger) => {
   const ps = logger.pubsub
 
   const decorate = function (fn, event) {
+    if (typeof fn !== 'function') throw new LoggerError('expect <fn> to be a function')
     return (...args) => {
       const data = {
         loggerId: logger.id,
@@ -22,6 +24,7 @@ module.exports = (logger) => {
     }
   }
 
-  ps.subscribe = decorate(ps.subscribe, 'subscribe')
   ps.publish = decorate(ps.publish, 'publish')
+  ps.subscribe = decorate(ps.subscribe, 'subscribe')
+  ps.unsubscribe = decorate(ps.unsubscribe, 'unsubscribe')
 }
