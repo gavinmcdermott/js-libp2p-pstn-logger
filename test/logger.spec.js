@@ -8,6 +8,7 @@ const R = require('ramda')
 
 const keys = require('./fixtures/keys').keys
 const Logger = require('./../src/index')
+const { LOGGER_EVENT_BASE } = require('./../src/config')
 
 const mapIndexed = R.addIndex(R.map)
 
@@ -65,16 +66,16 @@ describe('Logger', () => {
     })
   })
 
-  describe('emit', () => {
+  describe('Logger.pubsub events', () => {
     let validateEvent = noop
 
     describe('subscribe', () => {
       before(() => {
-        loggerA.removeListener('data', validateEvent)
+        loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
       })
 
       after(() => {
-        loggerA.removeListener('data', validateEvent)
+        loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
       })
 
       it('success', () => {
@@ -94,7 +95,7 @@ describe('Logger', () => {
           counter++
         }
 
-        loggerA.on('data', validateEvent)
+        loggerA.on(LOGGER_EVENT_BASE, validateEvent)
 
         expect(counter).to.equal(0)
 
@@ -106,11 +107,11 @@ describe('Logger', () => {
 
     describe('publish', () => {
       before(() => {
-        loggerA.removeListener('data', validateEvent)
+        loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
       })
 
       after(() => {
-        loggerA.removeListener('data', validateEvent)
+        loggerA.removeListener(LOGGER_EVENT_BASE, validateEvent)
       })
 
       it('success', () => {
@@ -130,7 +131,7 @@ describe('Logger', () => {
           counter++
         }
 
-        loggerA.on('data', validateEvent)
+        loggerA.on(LOGGER_EVENT_BASE, validateEvent)
 
         expect(counter).to.equal(0)
 
