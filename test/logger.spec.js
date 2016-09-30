@@ -5,28 +5,54 @@ const expect = require('chai').expect
 const PS = require('./../node_modules/libp2p-floodsub/src/index')
 const TestNode = require('libp2p-pstn-node')
 const R = require('ramda')
-const parallel = require('run-parallel')
 
 const keys = require('./fixtures/keys').keys
 const Logger = require('./../src/index')
 
 const mapIndexed = R.addIndex(R.map)
 
-describe('Logger', () => {
-  describe('constructor', () => {
-    const validNode = new TestNode({ id: keys[0], portOffset: 0 })
+const noop = () => {}
 
-    it('fails: missing Node', () => {
+describe('Logger', () => {
+  let loggerA
+  let loggers = R.range(0, 1)
+
+  const topicA = 'AAA'
+  const topicB = 'BBB'
+
+  const validNode = new TestNode({ id: keys[0], portOffset: 0 })
+
+  before(() => {
+    const startFns = mapIndexed((n, idx) => {
+      let node = new TestNode({ id: keys[idx], portOffset: idx })
+      loggers[idx] = new Logger(node, PS)
+      return node.start
+    }, loggers)
+
+    loggerA = loggers[0]
+
+    return Promise.all(startFns)
+  })
+
+  after(() => {
+    const stopFns = R.map((logger) => {
+      return logger.node.libp2p.stop
+    },loggers)
+    return Promise.all(stopFns)
+  })
+
+  describe('constructor', () => {
+    it('fail: missing testnet node', () => {
       const thrower = () => new Logger()
       expect(thrower).to.throw
     })
 
-    it('fails: invalid Node', () => {
+    it('fail: invalid testnet node', () => {
       const thrower = () => new Logger({})
       expect(thrower).to.throw
     })
 
-    it('fails: missing pubsub', () => {
+    it('fail: missing pubsub strategy', () => {
       const thrower = () => new Logger(validNode)
       expect(thrower).to.throw
     })
@@ -39,46 +65,36 @@ describe('Logger', () => {
     })
   })
 
-  describe('one node', () => {
-    let loggerA
-    let loggers = R.range(0, 1)
+  describe('emit', () => {
+    let validateEvent = noop
 
-    const topicA = 'AAA'
+    describe('subscribe', () => {
+      before(() => {
+        loggerA.removeListener('data', validateEvent)
+      })
 
-    before(() => {
-      const startFns = mapIndexed((n, idx) => {
-        let node = new TestNode({ id: keys[idx], portOffset: idx })
-        loggers[idx] = new Logger(node, PS)
-        return node.start
-      }, loggers)
+      after(() => {
+        loggerA.removeListener('data', validateEvent)
+      })
 
-      loggerA = loggers[0]
-
-      return Promise.all(startFns)
-    })
-
-    after(() => {
-      const stopFns = R.map((logger) => {
-        return logger.node.libp2p.stop
-      },loggers)
-      return Promise.all(stopFns)
-    })
-
-    describe('emit', () => {
-      it('"subscribe" events', () => {
+      it('success', () => {
         let counter = 0
 
-        loggerA.on('data', (data) => {
+        validateEvent = (data) => {
           const loggerId = data.loggerId
           const event = data.event
           const topic = data.args[0]
+          const timestamp = data.timestamp
 
           expect(R.equals(loggerId, loggerA.id)).to.be.true
           expect(R.equals(event, 'subscribe')).to.be.true
           expect(R.equals(topic, topicA)).to.be.true
+          expect(timestamp).to.exist
 
           counter++
-        })
+        }
+
+        loggerA.on('data', validateEvent)
 
         expect(counter).to.equal(0)
 
@@ -86,12 +102,42 @@ describe('Logger', () => {
 
         expect(counter).to.equal(1)
       })
+    })
 
+    describe('publish', () => {
+      before(() => {
+        loggerA.removeListener('data', validateEvent)
+      })
 
+      after(() => {
+        loggerA.removeListener('data', validateEvent)
+      })
 
+      it('success', () => {
+        let counter = 0
 
+        const validateEvent = (data) => {
+          const loggerId = data.loggerId
+          const event = data.event
+          const topic = data.args[0]
+          const timestamp = data.timestamp
 
+          expect(R.equals(loggerId, loggerA.id)).to.be.true
+          expect(R.equals(event, 'publish')).to.be.true
+          expect(R.equals(topic, topicA)).to.be.true
+          expect(timestamp).to.exist
 
+          counter++
+        }
+
+        loggerA.on('data', validateEvent)
+
+        expect(counter).to.equal(0)
+
+        loggerA.pubsub.publish(topicA)
+
+        expect(counter).to.equal(1)
+      })
     })
   })
 })
