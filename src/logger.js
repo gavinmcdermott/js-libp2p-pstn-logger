@@ -4,6 +4,7 @@ const EE = require('events').EventEmitter
 const TestNode = require('libp2p-pstn-node')
 const R = require('ramda')
 const util = require('util')
+// const multiaddr = require('multiaddr')
 
 const mountNodeLogger = require('./nodeLogger')
 const mountPubsubLogger = require('./pubsubLogger')
@@ -24,11 +25,9 @@ const Logger = class Logger {
       throw new LoggerError('Missing <pubsubStrategy>')
     }
 
-    // this.on('data', console.log)
-
-    this.id = testNode.peerInfo.id.toB58String()
-    this.node = testNode
-    this.pubsub = pubsubStrategy(this.node.libp2p)
+    this.libp2p = testNode.libp2p
+    this.peerInfo = testNode.peerInfo
+    this.pubsub = pubsubStrategy(this.libp2p)
 
     mountNodeLogger(this)
     mountPubsubLogger(this)
