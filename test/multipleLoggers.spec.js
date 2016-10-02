@@ -89,7 +89,7 @@ describe(`Multiple Pubsub.test's:`, () => {
     })
 
     describe(`Single topic (${topicOne}):`, () => {
-      it(`A captures its 'subscribe' event (no other nodes receive notifications)`, (done) => {
+      it(`'subscribe' event only emitted by the subscribing node`, (done) => {
         let counterA = 0
         let counterB = 0
 
@@ -132,7 +132,7 @@ describe(`Multiple Pubsub.test's:`, () => {
         }, 500)
       })
 
-      it(`A captures relevant 'receive' events from all nodes (self included)`, (done) => {
+      it(`'receive' events emitted when receiving publications on relevant topics from all nodes (self included)`, (done) => {
         let counterA = 0
         let counterB = 0
 
@@ -156,15 +156,18 @@ describe(`Multiple Pubsub.test's:`, () => {
         pubsubA.test.on(LOGGER_EVENT, validateReceiptInA)
 
         // A is subscribed to this topic
-        pubsubB.publish(topicOne, 'something from B')
-        pubsubB.publish(topicOne, 'something else from B')
+        R.forEach(() => {
+          pubsubA.publish(topicOne, `${topicOne} from A`)
+        }, R.range(0, 2))
 
-        pubsubA.publish(topicOne, 'something from A')
-        pubsubA.publish(topicOne, 'something else from A')
+        R.forEach(() => {
+          pubsubB.publish(topicOne, `${topicOne} from A`)
+        }, R.range(0, 2))
 
-        // Nobody is subscribed to this topic
-        pubsubB.publish(topicTwo, 'something else from B')
-        pubsubA.publish(topicTwo, 'something else from A')
+        // None subscribed to this topic
+        R.forEach(() => {
+          pubsubB.publish(topicTwo, `${topicTwo} from B`)
+        }, R.range(0, 2))
 
         setTimeout(() => {
           expect(counterA).to.equal(4)
@@ -173,7 +176,7 @@ describe(`Multiple Pubsub.test's:`, () => {
         }, 500)
       })
 
-      it(`A and B capture their own 'publish' events (no other nodes receive notifications)`, (done) => {
+      it(`'publish' event only emitted by the publishing node`, (done) => {
         let counterA = 0
         let counterB = 0
 
@@ -210,17 +213,19 @@ describe(`Multiple Pubsub.test's:`, () => {
         pubsubA.test.on(LOGGER_EVENT, validatePublishInA)
         pubsubB.test.on(LOGGER_EVENT, validatePublishInB)
 
-        pubsubB.publish(topicOne, 'to topic One')
-        pubsubB.publish(topicTwo, 'to topic Two')
-        pubsubB.publish(topicTwo, 'to topic Two')
+        R.forEach(() => {
+          pubsubA.publish(topicOne, `${topicOne} from A`)
+          pubsubA.publish(topicTwo, `${topicTwo} from A`)
+        }, R.range(0, 2))
 
-        pubsubA.publish(topicOne, 'to topic One')
-        pubsubA.publish(topicOne, 'to topic One')
-        pubsubA.publish(topicTwo, 'to topic Two')
+        R.forEach(() => {
+          pubsubB.publish(topicOne, `${topicOne} from B`)
+          pubsubB.publish(topicTwo, `${topicTwo} from B`)
+        }, R.range(0, 2))
 
         setTimeout(() => {
-          expect(counterA).to.equal(3)
-          expect(counterB).to.equal(3)
+          expect(counterA).to.equal(4)
+          expect(counterB).to.equal(4)
 
           pubsubA.test.removeListener(LOGGER_EVENT, validatePublishInA)
           pubsubB.test.removeListener(LOGGER_EVENT, validatePublishInB)
@@ -228,12 +233,113 @@ describe(`Multiple Pubsub.test's:`, () => {
           done()
         }, 500)
       })
+
+      it(`'unsubscribe' event only emitted by the unsubscribing node`, (done) => {
+        let counterA = 0
+        let counterB = 0
+
+        const validateEventA = (data) => {
+          const type = data.type
+          const source = data.source
+          const topic = data.args[0]
+          const timestamp = data.timestamp
+
+          expect(source).to.equal(nodeAid)
+          expect(type).to.equal(`unsubscribe`)
+          expect(topic).to.equal(topicOne)
+          expect(timestamp).to.exist
+
+          counterA++
+        }
+
+        const validateEventB = () => counterB++
+
+        pubsubA.test.on(LOGGER_EVENT, validateEventA)
+        pubsubB.test.on(LOGGER_EVENT, validateEventB)
+
+        pubsubA.unsubscribe(topicOne)
+
+        setTimeout(() => {
+          // ensure the logger works
+          expect(counterA).to.equal(1)
+          expect(counterB).to.equal(0)
+
+          // ensure the call was proxied correctly
+          const peersB = pubsubB.getPeerSet()
+          const peerAinB = peersB[nodeAid]
+          expect(R.values(peersB).length).to.equal(1)
+          expect(peerAinB.topics).to.eql([])
+
+          pubsubA.test.removeListener(LOGGER_EVENT, validateEventA)
+          pubsubB.test.removeListener(LOGGER_EVENT, validateEventB)
+
+          done()
+        }, 500)
+      })
     })
 
     describe(`Multiple topics (${topicOne}, ${topicTwo}):`, () => {
-      it('Fill_me_in_!!', () => {
-        // TODO: add multiple topic tests
+      const topicOneAPubs = 3
+      const topicOneBPubs = 3
+
+      const topicTwoAPubs = 3
+      const topicTwoBPubs = 3
+
+      const topicPubCount = topicOneAPubs + topicTwoAPubs + topicOneBPubs + topicTwoBPubs
+
+      before((done) => {
+        pubsubA.subscribe(topicOne)
+        pubsubA.subscribe(topicTwo)
+        setTimeout(() => {
+          done()
+        }, 1000)
       })
+
+      it(`'receive' events emitted when receiving publications on relevant topics from all nodes (self included)`, (done) => {
+        let counterA = 0
+
+        const validateReceiptInA = (data) => {
+          const type = data.type
+
+          if (type !== 'receive') return
+
+          const source = data.source
+          const timestamp = data.timestamp
+
+          expect(source).to.equal(nodeAid)
+          expect(type).to.equal('receive')
+          expect(timestamp).to.exist
+
+          counterA++
+        }
+
+        pubsubA.test.on(LOGGER_EVENT, validateReceiptInA)
+
+        // Pubsub A
+        R.forEach(() => {
+          pubsubA.publish(topicOne, `${topicOne} from A`)
+        }, R.range(0, topicOneAPubs))
+
+        R.forEach(() => {
+          pubsubA.publish(topicTwo, `${topicTwo} from A`)
+        }, R.range(0, topicTwoAPubs))
+
+        // Pubsub B
+        R.forEach(() => {
+          pubsubB.publish(topicOne, '${topicOne} from B')
+        }, R.range(0, topicOneBPubs))
+
+        R.forEach(() => {
+          pubsubB.publish(topicTwo, `${topicTwo} from B`)
+        }, R.range(0, topicTwoBPubs))
+
+        setTimeout(() => {
+          expect(counterA).to.equal(topicPubCount)
+          pubsubA.test.removeListener(LOGGER_EVENT, validateReceiptInA)
+          done()
+        }, 500)
+      })
+
     })
   })
 })
