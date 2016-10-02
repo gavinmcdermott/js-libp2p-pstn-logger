@@ -1,4 +1,4 @@
-# libp2p pubsub testnet logger
+# js libp2p pstn logger
 
 A test data logger for benchmarking libp2p pubsub implementations.
 
@@ -6,7 +6,6 @@ A test data logger for benchmarking libp2p pubsub implementations.
 
 To install through npm:
 
-```
 ```sh
 > npm i libp2p-pstn-logger --save
 ```
