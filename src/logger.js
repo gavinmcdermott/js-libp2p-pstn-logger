@@ -5,7 +5,7 @@ const util = require('util')
 const EE = require('events').EventEmitter
 const TestNode = require('libp2p-pstn-node')
 
-const { log, LOGGER_EVENT } = require('./config')
+const { log, PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./config')
 const { LoggerError } = require('./errors')
 
 module.exports = (pubsub, id) => {
@@ -26,16 +26,29 @@ module.exports = (pubsub, id) => {
   // Note: 'emit' is currently pubsub's receive event
   const pubsubProxies = ['publish', 'subscribe', 'unsubscribe', 'emit']
 
+  // TODO: potentially modify pubsub interface to give the logger some
+  // better access to events/streams to and from a pubsub...this seems hacky
   const proxyMap = R.map((fnName) => {
     const fn = fnName
-
-    // 'emit' events from the pubsub's EventEmitter is treated as a new
-    // message received for that node for some topic
-    // TODO: potentially modify pubsub interface to give the logger some
-    // better access to events/streams to and from a pubsub...this seems hacky
-    let type = fnName
-    if (fnName === 'emit') {
-      type = 'receive'
+    let type
+    switch (fnName) {
+      case 'publish':
+        type = PUBLISH_EVENT
+        break
+      // Note:
+      // 'emit' events from the pubsub's EventEmitter are treated as
+      // new messages received by the pubsub for some topic
+      case 'emit':
+        type = RECEIVE_EVENT
+        break
+      case 'subscribe':
+        type = SUBSCRIBE_EVENT
+        break
+      case 'unsubscribe':
+        type = UNSUBSCRIBE_EVENT
+        break
+      default:
+        throw new LoggerError(`Unrecognized function to proxy: ${fnName}`)
     }
 
     return { fn, type }
@@ -51,7 +64,7 @@ module.exports = (pubsub, id) => {
         args
       }
       log(`${data.id}: ${type} event at ${data.timestamp} with ${args}`)
-      pubsub.test.emit(LOGGER_EVENT, data)
+      pubsub.test.emit(type, data)
       return fn.apply(pubsub, args)
     }
   }

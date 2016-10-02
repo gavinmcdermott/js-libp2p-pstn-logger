@@ -9,7 +9,7 @@ const R = require('ramda')
 
 const keys = require('./fixtures/keys').keys
 const addTestLog = require('./../src')
-const { LOGGER_EVENT } = require('./../src/config')
+const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
 
 const NUM_NODES = 1
 
@@ -59,7 +59,7 @@ describe('Pubsub.test:', () => {
   })
 
   describe('events:', () => {
-    describe(`subscribe:`, () => {
+    describe(`${SUBSCRIBE_EVENT}:`, () => {
       it('success', (done) => {
         let counter = 0
 
@@ -70,48 +70,48 @@ describe('Pubsub.test:', () => {
           const timestamp = data.timestamp
 
           expect(source).to.equal(nodeAid)
-          expect(type).to.equal('subscribe')
+          expect(type).to.equal(SUBSCRIBE_EVENT)
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
           counter++
         }
 
-        pubsubA.test.on(LOGGER_EVENT, validateEvent)
+        pubsubA.test.on(SUBSCRIBE_EVENT, validateEvent)
         expect(counter).to.equal(0)
 
         pubsubA.subscribe(topicA)
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(LOGGER_EVENT, validateEvent)
+          pubsubA.test.removeListener(SUBSCRIBE_EVENT, validateEvent)
           done()
         }, 100)
       })
     })
 
-    describe(`publish:`, () => {
+    describe(`${PUBLISH_EVENT}:`, () => {
       it('success', (done) => {
         let counter = 0
 
         const validateEvent = (data) => {
           const type = data.type
 
-          if (type !== 'publish') return
+          if (type !== PUBLISH_EVENT) return
 
           const source = data.source
           const topic = data.args[0]
           const timestamp = data.timestamp
 
           expect(source).to.equal(nodeAid)
-          expect(type).to.equal(`publish`)
+          expect(type).to.equal(PUBLISH_EVENT)
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
           counter++
         }
 
-        pubsubA.test.on(LOGGER_EVENT, validateEvent)
+        pubsubA.test.on(PUBLISH_EVENT, validateEvent)
 
         expect(counter).to.equal(0)
 
@@ -119,47 +119,47 @@ describe('Pubsub.test:', () => {
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(LOGGER_EVENT, validateEvent)
+          pubsubA.test.removeListener(PUBLISH_EVENT, validateEvent)
           done()
         }, 100)
       })
     })
 
-    describe(`receive:`, () => {
+    describe(`${RECEIVE_EVENT}:`, () => {
       it('success', (done) => {
         let counter = 0
 
         const validateEvent = (data) => {
           const type = data.type
 
-          if (type !== 'receive') return
+          if (type !== RECEIVE_EVENT) return
 
           const source = data.source
           const topic = data.args[0]
           const timestamp = data.timestamp
 
           expect(source).to.equal(nodeAid)
-          expect(type).to.equal(`receive`)
+          expect(type).to.equal(RECEIVE_EVENT)
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
           counter++
         }
 
-        pubsubA.test.on(LOGGER_EVENT, validateEvent)
+        pubsubA.test.on(RECEIVE_EVENT, validateEvent)
         expect(counter).to.equal(0)
 
         pubsubA.publish(topicA, new Buffer('Hi!'))
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(LOGGER_EVENT, validateEvent)
+          pubsubA.test.removeListener(RECEIVE_EVENT, validateEvent)
           done()
         }, 500)
       })
     })
 
-    describe(`unsubscribe:`, () => {
+    describe(`${UNSUBSCRIBE_EVENT}:`, () => {
       it('success', (done) => {
         let counter = 0
 
@@ -170,7 +170,7 @@ describe('Pubsub.test:', () => {
           const timestamp = data.timestamp
 
           expect(source).to.equal(nodeAid)
-          expect(type).to.equal(`unsubscribe`)
+          expect(type).to.equal(UNSUBSCRIBE_EVENT)
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
@@ -178,13 +178,13 @@ describe('Pubsub.test:', () => {
         }
 
         expect(counter).to.equal(0)
-        pubsubA.test.on(LOGGER_EVENT, validateEvent)
+        pubsubA.test.on(UNSUBSCRIBE_EVENT, validateEvent)
 
         pubsubA.unsubscribe(topicA)
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(LOGGER_EVENT, validateEvent)
+          pubsubA.test.removeListener(UNSUBSCRIBE_EVENT, validateEvent)
           done()
         }, 100)
       })
