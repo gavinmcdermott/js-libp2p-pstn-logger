@@ -9,7 +9,7 @@ const parallel = require('run-parallel')
 
 const keys = require('./fixtures/keys').keys
 const Logger = require('./../src/index')
-const { MAIN_LOGGER_EVENT_TYPE, PS_LOGGER_EVENT_BASE } = require('./../src/config')
+const { MAIN_LOGGER_EVENT_TYPE } = require('./../src/config')
 
 const mapIndexed = R.addIndex(R.map)
 
@@ -17,11 +17,16 @@ const noop = () => {}
 
 describe('Logger', () => {
   let loggerA
+
+  let loggerAid
+
   let loggers = R.range(0, 1)
-  const topicA = 'AAA'
+
+  const topicA = 'Topic A'
+
   const validNode = new TestNode({ id: keys[0], portOffset: 0 })
 
-  before(() => {
+  before((done) => {
     const startFns = mapIndexed((n, idx) => {
       let node = new TestNode({ id: keys[idx], portOffset: idx })
       loggers[idx] = new Logger(node, PS)
@@ -29,19 +34,20 @@ describe('Logger', () => {
     }, loggers)
 
     loggerA = loggers[0]
+    loggerAid = loggerA.peerInfo.id.toB58String()
 
-    return Promise.all(startFns)
+    Promise.all(startFns).then(() => setTimeout(done, 1000))
   })
 
-  after(() => {
+  after((done) => {
     const stopFns = R.map((logger) => {
       return logger.libp2p.stop()
     },loggers)
 
-    return Promise.all(stopFns)
+    Promise.all(stopFns).then(() => setTimeout(done, 1000))
   })
 
-  describe('constructor', () => {
+  describe('Constructor:', () => {
     it('fail: missing testnet node', () => {
       const thrower = () => new Logger()
       expect(thrower).to.throw
@@ -64,19 +70,19 @@ describe('Logger', () => {
     })
   })
 
-  describe('Capture Logger.pubsub events from self', () => {
-    describe(`${PS_LOGGER_EVENT_BASE}subscribe`, () => {
+  describe('Capture Logger.pubsub events:', () => {
+    describe(`subscribe:`, () => {
       it('success', (done) => {
         let counter = 0
 
         const validateEvent = (data) => {
           const type = data.type
-          const id = data.id
+          const id = data.loggerId
           const topic = data.args[0]
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerA.peerInfo.id.toB58String())
-          expect(type).to.equal('logger:pubsub:subscribe')
+          expect(id).to.equal(loggerAid)
+          expect(type).to.equal('subscribe')
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
@@ -85,6 +91,7 @@ describe('Logger', () => {
 
         loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
         expect(counter).to.equal(0)
+
         loggerA.pubsub.subscribe(topicA)
 
         setTimeout(() => {
@@ -95,18 +102,21 @@ describe('Logger', () => {
       })
     })
 
-    describe(`${PS_LOGGER_EVENT_BASE}publish`, () => {
+    describe(`publish:`, () => {
       it('success', (done) => {
         let counter = 0
 
         const validateEvent = (data) => {
           const type = data.type
-          const id = data.id
+
+          if (type !== 'publish') return
+
+          const id = data.loggerId
           const topic = data.args[0]
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerA.peerInfo.id.toB58String())
-          expect(type).to.equal(`${PS_LOGGER_EVENT_BASE}emit`)
+          expect(id).to.equal(loggerAid)
+          expect(type).to.equal(`publish`)
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
@@ -114,8 +124,10 @@ describe('Logger', () => {
         }
 
         loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+
         expect(counter).to.equal(0)
-        loggerA.pubsub.publish(topicA, new Buffer('Hey there!'))
+
+        loggerA.pubsub.publish(topicA, new Buffer('Hey!'))
 
         setTimeout(() => {
           expect(counter).to.equal(1)
@@ -125,49 +137,52 @@ describe('Logger', () => {
       })
     })
 
-    describe(`${PS_LOGGER_EVENT_BASE}emit`, () => {
+    describe(`receive:`, () => {
       it('success', (done) => {
         let counter = 0
 
         const validateEvent = (data) => {
           const type = data.type
-          const id = data.id
+
+          if (type !== 'receive') return
+
+          const id = data.loggerId
           const topic = data.args[0]
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerA.peerInfo.id.toB58String())
-          expect(type).to.equal(`${PS_LOGGER_EVENT_BASE}emit`)
+          expect(id).to.equal(loggerAid)
+          expect(type).to.equal(`receive`)
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
           counter++
         }
 
+        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
         expect(counter).to.equal(0)
 
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
         loggerA.pubsub.publish(topicA, new Buffer('Hi!'))
 
         setTimeout(() => {
           expect(counter).to.equal(1)
           loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validateEvent)
           done()
-        }, 100)
+        }, 500)
       })
     })
 
-    describe(`${PS_LOGGER_EVENT_BASE}unsubscribe`, () => {
+    describe(`unsubscribe:`, () => {
       it('success', (done) => {
         let counter = 0
 
         const validateEvent = (data) => {
           const type = data.type
-          const id = data.id
+          const id = data.loggerId
           const topic = data.args[0]
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerA.peerInfo.id.toB58String())
-          expect(type).to.equal(`${PS_LOGGER_EVENT_BASE}unsubscribe`)
+          expect(id).to.equal(loggerAid)
+          expect(type).to.equal(`unsubscribe`)
           expect(topic).to.equal(topicA)
           expect(timestamp).to.exist
 
@@ -175,9 +190,8 @@ describe('Logger', () => {
         }
 
         expect(counter).to.equal(0)
-
-        loggerA.pubsub.subscribe(topicA)
         loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+
         loggerA.pubsub.unsubscribe(topicA)
 
         setTimeout(() => {

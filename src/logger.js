@@ -4,7 +4,6 @@ const EE = require('events').EventEmitter
 const TestNode = require('libp2p-pstn-node')
 const R = require('ramda')
 const util = require('util')
-// const multiaddr = require('multiaddr')
 
 const mountNodeLogger = require('./nodeLogger')
 const mountPubsubLogger = require('./pubsubLogger')

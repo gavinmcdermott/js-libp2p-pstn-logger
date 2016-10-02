@@ -1,21 +1,36 @@
 'use strict'
 
 const R = require('ramda')
-const { pubsubLogger, MAIN_LOGGER_EVENT_TYPE, PS_LOGGER_EVENT_BASE } = require('./config')
+const { pubsubLogger, MAIN_LOGGER_EVENT_TYPE } = require('./config')
 const { LoggerError } = require('./errors')
 
 module.exports = (logger) => {
   const ps = logger.pubsub
 
-  const relevantLoggerFns = [/*'publish',*/ 'subscribe', 'unsubscribe']
-  const relevantEventEmitterFns = ['emit']
-  const allRelevantFns = R.concat(relevantLoggerFns, relevantEventEmitterFns)
+  const relevantPubsubFns = ['publish', 'subscribe', 'unsubscribe']
+  const relevantEmitterFns = ['emit']
+  const allRelevantFns = R.concat(relevantPubsubFns, relevantEmitterFns)
+
+  const decorators = R.map((fnName) => {
+    const name = fnName
+
+    // 'emit' events from the pubsub's EventEmitter is treated as a new
+    // message received for that node for some topic
+    // TODO: potentially modify pubsub interface to give the logger some
+    // better access to events/streams to and from a pubsub...this seems hacky
+    let type = fnName
+    if (fnName === 'emit') {
+      type = 'receive'
+    }
+
+    return { name, type }
+  }, allRelevantFns)
 
   const decorate = function (fn, type) {
     if (typeof fn !== 'function') throw new LoggerError('expect <fn> to be a function')
     return (...args) => {
       const data = {
-        id: logger.peerInfo.id.toB58String(),
+        loggerId: logger.peerInfo.id.toB58String(),
         timestamp: Date.now(),
         type,
         args
@@ -26,11 +41,9 @@ module.exports = (logger) => {
     }
   }
 
-  const decorateAll = (fns) => {
-    R.forEach((fnName) => {
-      ps[fnName] = decorate(ps[fnName], `${PS_LOGGER_EVENT_BASE}${fnName}`)
-    }, fns)
+  const decorateAll = (fnDecorators) => {
+    R.forEach((fn) => ps[fn.name] = decorate(ps[fn.name], fn.type), fnDecorators)
   }
 
-  decorateAll(allRelevantFns)
+  decorateAll(decorators)
 }
