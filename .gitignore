@@ -1,2 +1,6 @@
 # vendor modules
 /node_modules
+
+# ignore debugs and logs
+*.log
+*.debug
