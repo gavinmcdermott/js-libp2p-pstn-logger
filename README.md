@@ -17,32 +17,52 @@ To install through npm:
 
 ```JavaScript
 const Pubsub = require('libp2p-floodsub')
-const TestNode = require('libp2p-pstn-node')
+const libp2p = require('libp2p-ipfs')
 
-const testNode = new TestNode({ id: keys[idx], portOffset: idx })
-const pubsub = PS(testNode.libp2p)
+const p2pInstance = new libp2p.Node(<somePeerInfo>)
+const pubsub = PS(p2pInstance)
 
-// decorate the pubsub instance
+// decorate the pubsub instance...
+// Note: pubsub is decorated with a .test property (a Nodejs EventEmitter)
 addTestLog(pubsub, testNode.peerInfo.id.toB58String())
-// pubsub now has a .test property that is an EventEmitter which emits test log events
 
-pubsubA.test.on('data', someHandler) // 'data' is the only event emitted
+// Now you can listen to any of the following...
+pubsub.test.on('subscribe', yourHandler)
+pubsub.test.on('unsubscribe', yourHandler)
+pubsub.test.on('publish', yourHandler)
+pubsub.test.on('receive', yourHandler)
 ```
+
+#### Event types
+
+The new `pubsub.test` emits the following events:
+- publish
+- subscribe
+- unsubscribe
+- receive
+
+#### Event structure
 
 Test log events are JSON objects structured as follows:
 
 ```JavaScript
 {
   timestamp: <milliseconds>, // time of event capture in the pubsub instance
-  source: <libp2p peer id base58 string>, // node.peerInfo.id.toB58String()
-  type: <string>, // publish, subscribe, unsubscribe, emit
-  args: <args array for the log event>
+  source: <libp2p_peer_id_base58_string>, // E.g.: libp2pNode.peerInfo.id.toB58String()
+  type: <string>, // publish, subscribe, unsubscribe, receive
+  args: <args_array_for_the_log_event>
 }
 ```
 
 ## API
 
-### `ps.test.on('data', <handler>)`
+### `pubsub.test.on('subscribe', <handler>)`
+
+### `pubsub.test.on('unsubscribe', <handler>)`
+
+### `pubsub.test.on('publish', <handler>)`
+
+### `pubsub.test.on('receive', <handler>)`
 
 ## Tests
 
