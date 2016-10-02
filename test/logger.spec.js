@@ -9,7 +9,7 @@ const parallel = require('run-parallel')
 
 const keys = require('./fixtures/keys').keys
 const Logger = require('./../src/index')
-const { MAIN_LOGGER_EVENT_TYPE } = require('./../src/config')
+const { LOGGER_EVENT } = require('./../src/config')
 
 const mapIndexed = R.addIndex(R.map)
 
@@ -89,14 +89,14 @@ describe('Logger', () => {
           counter++
         }
 
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+        loggerA.on(LOGGER_EVENT, validateEvent)
         expect(counter).to.equal(0)
 
         loggerA.pubsub.subscribe(topicA)
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+          loggerA.removeListener(LOGGER_EVENT, validateEvent)
           done()
         }, 100)
       })
@@ -123,7 +123,7 @@ describe('Logger', () => {
           counter++
         }
 
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+        loggerA.on(LOGGER_EVENT, validateEvent)
 
         expect(counter).to.equal(0)
 
@@ -131,7 +131,7 @@ describe('Logger', () => {
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+          loggerA.removeListener(LOGGER_EVENT, validateEvent)
           done()
         }, 100)
       })
@@ -158,14 +158,14 @@ describe('Logger', () => {
           counter++
         }
 
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+        loggerA.on(LOGGER_EVENT, validateEvent)
         expect(counter).to.equal(0)
 
         loggerA.pubsub.publish(topicA, new Buffer('Hi!'))
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+          loggerA.removeListener(LOGGER_EVENT, validateEvent)
           done()
         }, 500)
       })
@@ -190,13 +190,13 @@ describe('Logger', () => {
         }
 
         expect(counter).to.equal(0)
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+        loggerA.on(LOGGER_EVENT, validateEvent)
 
         loggerA.pubsub.unsubscribe(topicA)
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validateEvent)
+          loggerA.removeListener(LOGGER_EVENT, validateEvent)
           done()
         }, 100)
       })

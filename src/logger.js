@@ -5,10 +5,9 @@ const TestNode = require('libp2p-pstn-node')
 const R = require('ramda')
 const util = require('util')
 
-const mountNodeLogger = require('./nodeLogger')
-const mountPubsubLogger = require('./pubsubLogger')
-const { logger } = require('./config')
+const { log } = require('./config')
 const { LoggerError } = require('./errors')
+const mountPubsubLogger = require('./pubsubLogger')
 
 const Logger = class Logger {
   constructor(testNode, pubsubStrategy) {
@@ -27,13 +26,13 @@ const Logger = class Logger {
     this.libp2p = testNode.libp2p
     this.peerInfo = testNode.peerInfo
     this.pubsub = pubsubStrategy(this.libp2p)
+    this.log = log
 
-    mountNodeLogger(this)
     mountPubsubLogger(this)
   }
 }
 
-// Add event emitter
+// Add an EventEmitter
 util.inherits(Logger, EE)
 
 module.exports = Logger

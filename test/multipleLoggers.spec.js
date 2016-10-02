@@ -9,7 +9,7 @@ const PS = require('./../node_modules/libp2p-floodsub/src/index')
 
 const Logger = require('./../src/index')
 const keys = require('./fixtures/keys').keys
-const { MAIN_LOGGER_EVENT_TYPE } = require('./../src/config')
+const { LOGGER_EVENT } = require('./../src/config')
 
 const maxPublishes = 10
 const mapIndexed = R.addIndex(R.map)
@@ -95,8 +95,8 @@ describe('Multiple Loggers', () => {
 
         const validateEventB = () => counterB++
 
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateEventA)
-        loggerB.on(MAIN_LOGGER_EVENT_TYPE, validateEventB)
+        loggerA.on(LOGGER_EVENT, validateEventA)
+        loggerB.on(LOGGER_EVENT, validateEventB)
 
         loggerA.pubsub.subscribe(topicA)
 
@@ -111,8 +111,8 @@ describe('Multiple Loggers', () => {
           expect(R.values(peersB).length).to.equal(1)
           expect(peerAinB.topics).to.eql([topicA])
 
-          loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validateEventA)
-          loggerB.removeListener(MAIN_LOGGER_EVENT_TYPE, validateEventB)
+          loggerA.removeListener(LOGGER_EVENT, validateEventA)
+          loggerB.removeListener(LOGGER_EVENT, validateEventB)
 
           done()
         }, 500)
@@ -139,7 +139,7 @@ describe('Multiple Loggers', () => {
           counterA++
         }
 
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validateReceiptInA)
+        loggerA.on(LOGGER_EVENT, validateReceiptInA)
 
         // A is subscribed to this topic
         loggerB.pubsub.publish(topicA, 'something from B')
@@ -154,7 +154,7 @@ describe('Multiple Loggers', () => {
 
         setTimeout(() => {
           expect(counterA).to.equal(4)
-          loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validateReceiptInA)
+          loggerA.removeListener(LOGGER_EVENT, validateReceiptInA)
           done()
         }, 500)
       })
@@ -193,8 +193,8 @@ describe('Multiple Loggers', () => {
           counterB++
         }
 
-        loggerA.on(MAIN_LOGGER_EVENT_TYPE, validatePublishInA)
-        loggerB.on(MAIN_LOGGER_EVENT_TYPE, validatePublishInB)
+        loggerA.on(LOGGER_EVENT, validatePublishInA)
+        loggerB.on(LOGGER_EVENT, validatePublishInB)
 
         loggerB.pubsub.publish(topicA, 'to topic A')
         loggerB.pubsub.publish(topicB, 'to topic B')
@@ -208,8 +208,8 @@ describe('Multiple Loggers', () => {
           expect(counterA).to.equal(3)
           expect(counterB).to.equal(3)
 
-          loggerA.removeListener(MAIN_LOGGER_EVENT_TYPE, validatePublishInA)
-          loggerB.removeListener(MAIN_LOGGER_EVENT_TYPE, validatePublishInB)
+          loggerA.removeListener(LOGGER_EVENT, validatePublishInA)
+          loggerB.removeListener(LOGGER_EVENT, validatePublishInB)
 
           done()
         }, 500)

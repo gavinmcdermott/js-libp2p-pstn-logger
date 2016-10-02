@@ -1,7 +1,7 @@
 'use strict'
 
 const R = require('ramda')
-const { pubsubLogger, MAIN_LOGGER_EVENT_TYPE } = require('./config')
+const { LOGGER_EVENT } = require('./config')
 const { LoggerError } = require('./errors')
 
 module.exports = (logger) => {
@@ -35,8 +35,8 @@ module.exports = (logger) => {
         type,
         args
       }
-      pubsubLogger(`${data.id}: ${type} event at ${data.timestamp} with ${args}`)
-      logger.emit(MAIN_LOGGER_EVENT_TYPE, data)
+      logger.log(`${data.id}: ${type} event at ${data.timestamp} with ${args}`)
+      logger.emit(LOGGER_EVENT, data)
       return fn.apply(ps, args)
     }
   }
