@@ -1,7 +1,6 @@
 'use strict'
 
 const R = require('ramda')
-const util = require('util')
 const EE = require('events').EventEmitter
 const TestNode = require('libp2p-pstn-node')
 
@@ -21,9 +20,15 @@ module.exports = (pubsub, id) => {
     throw new LoggerError('pubsub.test exists')
   }
 
-  pubsub.test = new EE()
+  if (R.hasIn('testEvents', pubsub)) {
+    throw new LoggerError('pubsub.testEvents exists')
+  }
 
-  // Note: 'emit' is currently pubsub's receive event
+  pubsub.test = new EE()
+  pubsub.testEvents = [ PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT ]
+
+  // Note: 'emit' is currently pubsub's receive event - the pubsub event emitter is
+  // called when a message is received for a topic the pubsub node is interested in
   const pubsubProxies = ['publish', 'subscribe', 'unsubscribe', 'emit']
 
   // TODO: potentially modify pubsub interface to give the logger some

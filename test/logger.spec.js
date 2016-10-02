@@ -1,6 +1,7 @@
 'use strict'
 
 const expect = require('chai').expect
+const EE = require('events').EventEmitter
 // Note: require('libp2p-floodsub') throws: Cannot find module 'libp2p-floodsub'
 const PS = require('./../node_modules/libp2p-floodsub/src')
 const TestNode = require('libp2p-pstn-node')
@@ -37,6 +38,10 @@ describe('Pubsub.test:', () => {
       nodes.push(testNode)
 
       let pubsub = PS(testNode.libp2p)
+
+      expect(pubsub.test).not.to.exist
+      expect(pubsub.testEvents).not.to.exist
+
       addTestLog(pubsub, testNode.peerInfo.id.toB58String())
       pubsubs.push(pubsub)
 
@@ -58,7 +63,27 @@ describe('Pubsub.test:', () => {
     Promise.all(stopFns).then(() => setTimeout(done, 1000))
   })
 
-  describe('events:', () => {
+  describe('logger decorates each pubsubInstance:', () => {
+    describe('pubsubInstance.test:', () => {
+      it('success', () => {
+        expect(pubsubA.test).to.exist
+        expect(pubsubA.test instanceof EE).to.be.true
+      })
+    })
+
+    describe('pubsubInstance.testEvents:', () => {
+      it('success', () => {
+        expect(pubsubA.testEvents).to.exist
+        expect(pubsubA.testEvents.length).to.eql(4)
+        expect(R.contains(SUBSCRIBE_EVENT, pubsubA.testEvents)).to.be.true
+        expect(R.contains(UNSUBSCRIBE_EVENT, pubsubA.testEvents)).to.be.true
+        expect(R.contains(PUBLISH_EVENT, pubsubA.testEvents)).to.be.true
+        expect(R.contains(RECEIVE_EVENT, pubsubA.testEvents)).to.be.true
+      })
+    })
+  })
+
+  describe('pubsubInstance.test log events:', () => {
     describe(`${SUBSCRIBE_EVENT}:`, () => {
       it('success', (done) => {
         let counter = 0
