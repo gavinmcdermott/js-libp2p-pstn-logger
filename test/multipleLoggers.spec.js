@@ -3,35 +3,41 @@
 
 const R = require('ramda')
 const expect = require('chai').expect
-const parallel = require('run-parallel')
 const TestNode = require('libp2p-pstn-node')
-const PS = require('./../node_modules/libp2p-floodsub/src/index')
+// Note: require('libp2p-floodsub') throws: Cannot find module 'libp2p-floodsub'
+const PS = require('./../node_modules/libp2p-floodsub/src')
 
-const Logger = require('./../src/index')
+const addTestLog = require('./../src')
 const keys = require('./fixtures/keys').keys
 const { LOGGER_EVENT } = require('./../src/config')
 
-const maxPublishes = 10
+const NUM_NODES = 2
+
 const mapIndexed = R.addIndex(R.map)
 
-describe('Multiple Loggers', () => {
-  let loggerA
-  let loggerB
+describe(`Multiple Pubsub.test's:`, () => {
+  let nodeA
+  let nodeAid
+  let pubsubA
 
-  let loggerAid
-  let loggerBid
+  let nodeB
+  let nodeBid
+  let pubsubB
 
-  let loggers = R.range(0, 2)
+  const topicOne = 'Topic One'
+  const topicTwo = 'Topic Two'
 
-  const topicA = 'Topic A'
-  const topicB = 'Topic B'
+  let nodes = []
+  let pubsubs = []
+
+  let nodeCount = R.range(0, NUM_NODES)
 
   const shouldNotHappen = () => expect.fail()
   const noop = () => {}
 
-  const dialP = (loggerA, loggerB) => {
+  const dialP = (nodeA, nodeB) => {
     return new Promise((resolve) => {
-      loggerA.libp2p.dialByPeerInfo(loggerB.peerInfo, (err) => {
+      nodeA.libp2p.dialByPeerInfo(nodeB.peerInfo, (err) => {
         expect(err).to.not.exist
         resolve()
       })
@@ -40,16 +46,23 @@ describe('Multiple Loggers', () => {
 
   before((done) => {
     const startFns = mapIndexed((n, idx) => {
-      let node = new TestNode({ id: keys[idx], portOffset: idx })
-      loggers[idx] = new Logger(node, PS)
-      return node.start()
-    }, loggers)
+      let testNode = new TestNode({ id: keys[idx], portOffset: idx })
+      nodes.push(testNode)
 
-    loggerA = loggers[0]
-    loggerAid = loggerA.peerInfo.id.toB58String()
+      let pubsub = PS(testNode.libp2p)
+      addTestLog(pubsub, testNode.peerInfo.id.toB58String())
+      pubsubs.push(pubsub)
 
-    loggerB = loggers[1]
-    loggerBid = loggerB.peerInfo.id.toB58String()
+      return testNode.start()
+    }, nodeCount)
+
+    nodeA = nodes[0]
+    pubsubA = pubsubs[0]
+    nodeAid = nodeA.peerInfo.id.toB58String()
+
+    nodeB = nodes[1]
+    pubsubB = pubsubs[1]
+    nodeBid = nodeB.peerInfo.id.toB58String()
 
     Promise.all(startFns)
       .then(() => {
@@ -57,37 +70,38 @@ describe('Multiple Loggers', () => {
       })
   })
 
-  describe('2 Loggers', () => {
+  describe('2 Pubsubs (A, B):', () => {
 
     before((done) => {
       // use a timeout so you don't skip ahead before swarm does its dials
-      dialP(loggerA, loggerB)
+      dialP(nodeA, nodeB)
       .then(() => {
         setTimeout(done, 2000)
       })
     })
 
     after(() => {
-      const stopFns = R.map((logger) => {
-        return logger.libp2p.stop()
-      }, loggers)
+      const stopFns = R.map((node) => {
+        return node.libp2p.stop()
+      }, nodes)
+
       return Promise.all(stopFns)
     })
 
-    describe(`Single topic (${topicA})`, () => {
+    describe(`Single topic (${topicOne}):`, () => {
       it(`A captures its 'subscribe' event (no other nodes receive notifications)`, (done) => {
         let counterA = 0
         let counterB = 0
 
         const validateEventA = (data) => {
           const type = data.type
-          const id = data.loggerId
+          const source = data.source
           const topic = data.args[0]
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerAid)
+          expect(source).to.equal(nodeAid)
           expect(type).to.equal(`subscribe`)
-          expect(topic).to.equal(topicA)
+          expect(topic).to.equal(topicOne)
           expect(timestamp).to.exist
 
           counterA++
@@ -95,10 +109,10 @@ describe('Multiple Loggers', () => {
 
         const validateEventB = () => counterB++
 
-        loggerA.on(LOGGER_EVENT, validateEventA)
-        loggerB.on(LOGGER_EVENT, validateEventB)
+        pubsubA.test.on(LOGGER_EVENT, validateEventA)
+        pubsubB.test.on(LOGGER_EVENT, validateEventB)
 
-        loggerA.pubsub.subscribe(topicA)
+        pubsubA.subscribe(topicOne)
 
         setTimeout(() => {
           // ensure the logger works
@@ -106,13 +120,13 @@ describe('Multiple Loggers', () => {
           expect(counterB).to.equal(0)
 
           // ensure the call was proxied correctly
-          const peersB = loggerB.pubsub.getPeerSet()
-          const peerAinB = peersB[loggerAid]
+          const peersB = pubsubB.getPeerSet()
+          const peerAinB = peersB[nodeAid]
           expect(R.values(peersB).length).to.equal(1)
-          expect(peerAinB.topics).to.eql([topicA])
+          expect(peerAinB.topics).to.eql([topicOne])
 
-          loggerA.removeListener(LOGGER_EVENT, validateEventA)
-          loggerB.removeListener(LOGGER_EVENT, validateEventB)
+          pubsubA.test.removeListener(LOGGER_EVENT, validateEventA)
+          pubsubB.test.removeListener(LOGGER_EVENT, validateEventB)
 
           done()
         }, 500)
@@ -127,34 +141,34 @@ describe('Multiple Loggers', () => {
 
           if (type !== 'receive') return
 
-          const id = data.loggerId
+          const source = data.source
           const topic = data.args[0]
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerAid)
+          expect(source).to.equal(nodeAid)
           expect(type).to.equal('receive')
-          expect(topic).to.equal(topicA)
+          expect(topic).to.equal(topicOne)
           expect(timestamp).to.exist
 
           counterA++
         }
 
-        loggerA.on(LOGGER_EVENT, validateReceiptInA)
+        pubsubA.test.on(LOGGER_EVENT, validateReceiptInA)
 
         // A is subscribed to this topic
-        loggerB.pubsub.publish(topicA, 'something from B')
-        loggerB.pubsub.publish(topicA, 'something else from B')
+        pubsubB.publish(topicOne, 'something from B')
+        pubsubB.publish(topicOne, 'something else from B')
 
-        loggerA.pubsub.publish(topicA, 'something from A')
-        loggerA.pubsub.publish(topicA, 'something else from A')
+        pubsubA.publish(topicOne, 'something from A')
+        pubsubA.publish(topicOne, 'something else from A')
 
         // Nobody is subscribed to this topic
-        loggerB.pubsub.publish(topicB, 'something else from B')
-        loggerA.pubsub.publish(topicB, 'something else from A')
+        pubsubB.publish(topicTwo, 'something else from B')
+        pubsubA.publish(topicTwo, 'something else from A')
 
         setTimeout(() => {
           expect(counterA).to.equal(4)
-          loggerA.removeListener(LOGGER_EVENT, validateReceiptInA)
+          pubsubA.test.removeListener(LOGGER_EVENT, validateReceiptInA)
           done()
         }, 500)
       })
@@ -168,10 +182,10 @@ describe('Multiple Loggers', () => {
 
           if (type !== 'publish') return
 
-          const id = data.loggerId
+          const source = data.source
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerAid)
+          expect(source).to.equal(nodeAid)
           expect(type).to.equal('publish')
           expect(timestamp).to.exist
 
@@ -183,40 +197,40 @@ describe('Multiple Loggers', () => {
 
           if (type !== 'publish') return
 
-          const id = data.loggerId
+          const source = data.source
           const timestamp = data.timestamp
 
-          expect(id).to.equal(loggerBid)
+          expect(source).to.equal(nodeBid)
           expect(type).to.equal('publish')
           expect(timestamp).to.exist
 
           counterB++
         }
 
-        loggerA.on(LOGGER_EVENT, validatePublishInA)
-        loggerB.on(LOGGER_EVENT, validatePublishInB)
+        pubsubA.test.on(LOGGER_EVENT, validatePublishInA)
+        pubsubB.test.on(LOGGER_EVENT, validatePublishInB)
 
-        loggerB.pubsub.publish(topicA, 'to topic A')
-        loggerB.pubsub.publish(topicB, 'to topic B')
-        loggerB.pubsub.publish(topicB, 'to topic B')
+        pubsubB.publish(topicOne, 'to topic One')
+        pubsubB.publish(topicTwo, 'to topic Two')
+        pubsubB.publish(topicTwo, 'to topic Two')
 
-        loggerA.pubsub.publish(topicA, 'to topic A')
-        loggerA.pubsub.publish(topicA, 'to topic A')
-        loggerA.pubsub.publish(topicB, 'to topic B')
+        pubsubA.publish(topicOne, 'to topic One')
+        pubsubA.publish(topicOne, 'to topic One')
+        pubsubA.publish(topicTwo, 'to topic Two')
 
         setTimeout(() => {
           expect(counterA).to.equal(3)
           expect(counterB).to.equal(3)
 
-          loggerA.removeListener(LOGGER_EVENT, validatePublishInA)
-          loggerB.removeListener(LOGGER_EVENT, validatePublishInB)
+          pubsubA.test.removeListener(LOGGER_EVENT, validatePublishInA)
+          pubsubB.test.removeListener(LOGGER_EVENT, validatePublishInB)
 
           done()
         }, 500)
       })
     })
 
-    describe(`Multiple topics (${topicA}, ${topicB})`, () => {
+    describe(`Multiple topics (${topicOne}, ${topicTwo}):`, () => {
       it('Fill_me_in_!!', () => {
         // TODO: add multiple topic tests
       })
