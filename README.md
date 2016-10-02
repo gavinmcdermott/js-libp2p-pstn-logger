@@ -19,12 +19,12 @@ To install through npm:
 const Pubsub = require('libp2p-floodsub')
 const libp2p = require('libp2p-ipfs')
 
-const p2pInstance = new libp2p.Node(<somePeerInfo>)
-const pubsub = PS(p2pInstance)
+const p2p = new libp2p.Node(<somePeerInfo>)
+const pubsub = PS(p2p)
 
 // decorate the pubsub instance...
 // Note: pubsub is decorated with a .test property (a Nodejs EventEmitter)
-addTestLog(pubsub, testNode.peerInfo.id.toB58String())
+addTestLog(pubsub, p2p.peerInfo.id.toB58String())
 
 // Now you can listen to any of the following...
 pubsub.test.on('subscribe', yourHandler)
