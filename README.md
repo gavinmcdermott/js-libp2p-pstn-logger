@@ -12,7 +12,9 @@ To install through npm:
 
 ## Example
 
-`libp2p-pstn-logger` is built to work with [this early implementation of libp2p pubsub](https://github.com/libp2p/js-libp2p-floodsub). It simply decorates the Pubsub instance with new test log events necessary for the testnet benchmark tools.
+`libp2p-pstn-logger` is built to work with [this early implementation of libp2p pubsub](https://github.com/libp2p/js-libp2p-floodsub). It simply proxies a Pubsub instance's function calls new log events necessary for the testnet benchmark tools.
+
+It logs using [this debug module](https://github.com/visionmedia/debug) seen commonly in the `js-libp2p` ecosystem. 
 
 ```JavaScript
 const Pubsub = require('libp2p-floodsub')
@@ -21,26 +23,29 @@ const libp2p = require('libp2p-ipfs')
 const p2p = new libp2p.Node(<somePeerInfo>)
 const pubsub = PS(p2p)
 
-// decorate the pubsub instance...
-// Note: pubsub is decorated with a .test property (a Nodejs EventEmitter)
-addTestLog(pubsub, p2p.peerInfo.id.toB58String())
+// If you want to work with a logger instance, simply create one.
+// Otherwise it will proxy and log the important pubsub events
 
-// Now you can listen to any of the following...
-pubsub.test.on('subscribe', yourHandler)
-pubsub.test.on('unsubscribe', yourHandler)
-pubsub.test.on('publish', yourHandler)
-pubsub.test.on('receive', yourHandler)
+const logger = new Logger(pubsub, p2p.peerInfo.id.toB58String())
 ```
 
-#### Event types
+### Proxied Pubsub Log Events
 
-The new `pubsub.test` emits the following events:
-- publish
-- subscribe
-- unsubscribe
-- receive
+The proxied `pubsub` instance will now log the following events:
 
-#### Event structure
+- `<timestamp> pstn:logger publish ...`
+- `<timestamp> pstn:logger receive ...`
+- `<timestamp> pstn:logger subscribe ...`
+- `<timestamp> pstn:logger unsubscribe ...`
+
+### Logger Instance Events
+
+If using a logger instance, you will receive these events:
+
+- `pubsub.test.on('publish', <handler>)`
+- `pubsub.test.on('receive', <handler>)` 
+- `pubsub.test.on('subscribe', <handler>)`
+- `pubsub.test.on('unsubscribe', <handler>)`
 
 Test log events are JSON objects structured as follows:
 
@@ -55,13 +60,15 @@ Test log events are JSON objects structured as follows:
 
 ## API
 
-### `pubsub.test.on('subscribe', <handler>)`
+### Logger Instance
 
-### `pubsub.test.on('unsubscribe', <handler>)`
+#### `pubsub.test.on('publish', <handler>)`
 
-### `pubsub.test.on('publish', <handler>)`
+#### `pubsub.test.on('receive', <handler>)`
 
-### `pubsub.test.on('receive', <handler>)`
+#### `pubsub.test.on('subscribe', <handler>)`
+
+#### `pubsub.test.on('unsubscribe', <handler>)`
 
 ## Tests
 
