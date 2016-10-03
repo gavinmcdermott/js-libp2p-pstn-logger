@@ -12,7 +12,7 @@ To install through npm:
 
 ## Example
 
-`libp2p-pstn-logger` is built to work with [this early implementation of libp2p pubsub](https://github.com/libp2p/js-libp2p-floodsub). It simply proxies a Pubsub instance's function calls new log events necessary for the testnet benchmark tools.
+`libp2p-pstn-logger` is built to work with [this early implementation of libp2p pubsub](https://github.com/libp2p/js-libp2p-floodsub). It simply proxies a Pubsub instance's function calls and adds the new log events necessary for the testnet benchmark tools.
 
 It logs using [this debug module](https://github.com/visionmedia/debug) seen commonly in the `js-libp2p` ecosystem. 
 
@@ -27,6 +27,7 @@ const pubsub = PS(p2p)
 // Otherwise it will proxy and log the important pubsub events
 
 const logger = new Logger(pubsub, p2p.peerInfo.id.toB58String())
+logger.on('publish', <your handler>)
 ```
 
 ### Proxied Pubsub Log Events
@@ -40,12 +41,14 @@ The proxied `pubsub` instance will now log the following events:
 
 ### Logger Instance Events
 
-If using a logger instance, you will receive these events:
+Logger instances will receive these events:
 
 - `pubsub.test.on('publish', <handler>)`
 - `pubsub.test.on('receive', <handler>)` 
 - `pubsub.test.on('subscribe', <handler>)`
 - `pubsub.test.on('unsubscribe', <handler>)`
+
+### Logger Instance Event Structure
 
 Test log events are JSON objects structured as follows:
 
@@ -62,13 +65,13 @@ Test log events are JSON objects structured as follows:
 
 ### Logger Instance
 
-#### `pubsub.test.on('publish', <handler>)`
+#### `logger.on('publish', <handler>)`
 
-#### `pubsub.test.on('receive', <handler>)`
+#### `logger.on('receive', <handler>)`
 
-#### `pubsub.test.on('subscribe', <handler>)`
+#### `logger.on('subscribe', <handler>)`
 
-#### `pubsub.test.on('unsubscribe', <handler>)`
+#### `logger.on('unsubscribe', <handler>)`
 
 ## Tests
 
