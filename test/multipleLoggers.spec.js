@@ -7,7 +7,7 @@ const TestNode = require('libp2p-pstn-node')
 // Note: require('libp2p-floodsub') throws: Cannot find module 'libp2p-floodsub'
 const PS = require('./../node_modules/libp2p-floodsub/src')
 
-const Logger = require('./../src')
+const addLogger = require('./../src')
 const keys = require('./fixtures/keys').keys
 const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
 
@@ -55,7 +55,7 @@ describe(`Multiple Loggers:`, () => {
       let pubsub = PS(testNode.libp2p)
       pubsubs.push(pubsub)
 
-      let logger = new Logger(pubsub, testNode.peerInfo.id.toB58String())
+      let logger = addLogger(pubsub, testNode.peerInfo.id.toB58String())
       loggers.push(logger)
 
       return testNode.start()

@@ -7,7 +7,7 @@ const TestNode = require('libp2p-pstn-node')
 const { log, PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./config')
 const { LoggerError } = require('./errors')
 
-module.exports = function Logger (pubsub, id) {
+module.exports = function addLogger (pubsub, id) {
   if (R.isNil(pubsub)) {
     throw new LoggerError('Missing pubsub')
   }

@@ -1,5 +1,5 @@
 'use strict'
 
-const Logger = require('./logger')
+const addLogger = require('./add-logger')
 
-module.exports = Logger
+module.exports = addLogger

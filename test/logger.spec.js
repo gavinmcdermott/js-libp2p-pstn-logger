@@ -9,7 +9,7 @@ const R = require('ramda')
 // const parallel = require('run-parallel')
 
 const keys = require('./fixtures/keys').keys
-const Logger = require('./../src')
+const addLogger = require('./../src')
 const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
 
 const NUM_NODES = 1
@@ -42,7 +42,7 @@ describe('Logger:', () => {
       let pubsub = PS(testNode.libp2p)
       pubsubs.push(pubsub)
 
-      let logger = new Logger(pubsub, testNode.peerInfo.id.toB58String())
+      let logger = addLogger(pubsub, testNode.peerInfo.id.toB58String())
       loggers.push(logger)
 
       return testNode.start()
