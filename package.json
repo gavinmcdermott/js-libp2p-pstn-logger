@@ -4,9 +4,9 @@
   "description": "A data logger for benchmarking libp2p pubsub implementations",
   "main": "src/index.js",
   "scripts": {
-    "test": "DEBUG=-* mocha -t 60000 test/**/*.spec.js",
+    "test": "mocha -t 60000 test/**/*.spec.js",
     "test:debug": "DEBUG=pstn:logger* mocha -t 60000 test/**/*.spec.js",
-    "test:log": "DEBUG_FD=2 DEBUG=pstn:logger* mocha -t 60000 test/**/*.spec.js 2> pstn.log"
+    "test:log": "DEBUG=pstn:logger* mocha -t 60000 test/**/*.spec.js 3> test/test-log/pstn.log"
   },
   "repository": {
     "type": "git",

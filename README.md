@@ -16,6 +16,9 @@ To install through npm:
 
 It logs using [`debug`](https://github.com/visionmedia/debug) seen commonly in the `js-libp2p` ecosystem. 
 
+The log namespace is `pstn:logger` and `pstn:logger:error`
+
+
 ```JavaScript
 const Pubsub = require('libp2p-floodsub')
 const libp2p = require('libp2p-ipfs')

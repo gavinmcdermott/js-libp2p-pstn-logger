@@ -1,18 +1,21 @@
 'use strict'
 
+const fs = require('fs')
+const path = require('path')
 const expect = require('chai').expect
 const EE = require('events').EventEmitter
 // Note: require('libp2p-floodsub') throws: Cannot find module 'libp2p-floodsub'
 const PS = require('./../node_modules/libp2p-floodsub/src')
 const TestNode = require('libp2p-pstn-node')
 const R = require('ramda')
-// const parallel = require('run-parallel')
 
 const keys = require('./fixtures/keys').keys
 const addLogger = require('./../src')
 const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
 
 const NUM_NODES = 1
+
+const testLogPath = path.join(__dirname, '/test-log/pstn.log')
 
 const mapIndexed = R.addIndex(R.map)
 
