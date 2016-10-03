@@ -7,7 +7,7 @@ const TestNode = require('libp2p-pstn-node')
 const { log, PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./config')
 const { LoggerError } = require('./errors')
 
-module.exports = (pubsub, id) => {
+module.exports = function Logger (pubsub, id) {
   if (R.isNil(pubsub)) {
     throw new LoggerError('Missing pubsub')
   }
@@ -16,23 +16,13 @@ module.exports = (pubsub, id) => {
     throw new LoggerError('Missing id')
   }
 
-  if (R.hasIn('test', pubsub)) {
-    throw new LoggerError('pubsub.test exists')
-  }
+  const logger = new EE()
 
-  if (R.hasIn('testEvents', pubsub)) {
-    throw new LoggerError('pubsub.testEvents exists')
-  }
-
-  pubsub.test = new EE()
-  pubsub.testEvents = [ PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT ]
-
-  // Note: 'emit' is currently pubsub's receive event - the pubsub event emitter is
+  // Important Note:
+  // 'emit' is currently pubsub's receive event - the pubsub event emitter is
   // called when a message is received for a topic the pubsub node is interested in
-  const pubsubProxies = ['publish', 'subscribe', 'unsubscribe', 'emit']
+  const pubsubProxyFns = ['publish', 'subscribe', 'unsubscribe', 'emit']
 
-  // TODO: potentially modify pubsub interface to give the logger some
-  // better access to events/streams to and from a pubsub...this seems hacky
   const proxyMap = R.map((fnName) => {
     const fn = fnName
     let type
@@ -40,9 +30,6 @@ module.exports = (pubsub, id) => {
       case 'publish':
         type = PUBLISH_EVENT
         break
-      // Note:
-      // 'emit' events from the pubsub's EventEmitter are treated as
-      // new messages received by the pubsub for some topic
       case 'emit':
         type = RECEIVE_EVENT
         break
@@ -57,7 +44,7 @@ module.exports = (pubsub, id) => {
     }
 
     return { fn, type }
-  }, pubsubProxies)
+  }, pubsubProxyFns)
 
   const decorate = function (fn, type) {
     if (typeof fn !== 'function') throw new LoggerError('expect <fn> to be a function')
@@ -68,8 +55,16 @@ module.exports = (pubsub, id) => {
         type,
         args
       }
-      log(`${data.id}: ${type} event at ${data.timestamp} with ${args}`)
-      pubsub.test.emit(type, data)
+
+      if (R.isNil(args[1])) {
+        log(type, id, args[0])
+      } else {
+        log(type, id, args[0], args[1])
+      }
+
+      // If using the eventEmitter
+      logger.emit(type, data)
+
       return fn.apply(pubsub, args)
     }
   }
@@ -79,4 +74,6 @@ module.exports = (pubsub, id) => {
   }
 
   decoratePubsub(proxyMap)
+
+  return logger
 }

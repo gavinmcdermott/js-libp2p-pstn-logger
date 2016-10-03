@@ -9,7 +9,7 @@ const R = require('ramda')
 // const parallel = require('run-parallel')
 
 const keys = require('./fixtures/keys').keys
-const addTestLog = require('./../src')
+const Logger = require('./../src')
 const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
 
 const NUM_NODES = 1
@@ -18,13 +18,15 @@ const mapIndexed = R.addIndex(R.map)
 
 const noop = () => {}
 
-describe('Pubsub.test:', () => {
+describe('Logger:', () => {
   let nodeA
   let nodeAid
+  let loggerA
   let pubsubA
 
   let nodes = []
   let pubsubs = []
+  let loggers = []
 
   const topicA = 'Topic A'
 
@@ -38,18 +40,18 @@ describe('Pubsub.test:', () => {
       nodes.push(testNode)
 
       let pubsub = PS(testNode.libp2p)
-
-      expect(pubsub.test).not.to.exist
-      expect(pubsub.testEvents).not.to.exist
-
-      addTestLog(pubsub, testNode.peerInfo.id.toB58String())
       pubsubs.push(pubsub)
+
+      let logger = new Logger(pubsub, testNode.peerInfo.id.toB58String())
+      loggers.push(logger)
 
       return testNode.start()
     }, nodeCount)
 
     nodeA = R.head(nodes)
     pubsubA = R.head(pubsubs)
+    loggerA = R.head(loggers)
+
     nodeAid = nodeA.peerInfo.id.toB58String()
 
     Promise.all(startFns).then(() => setTimeout(done, 1000))
@@ -63,27 +65,7 @@ describe('Pubsub.test:', () => {
     Promise.all(stopFns).then(() => setTimeout(done, 1000))
   })
 
-  describe('logger decorates each pubsubInstance:', () => {
-    describe('pubsubInstance.test:', () => {
-      it('success', () => {
-        expect(pubsubA.test).to.exist
-        expect(pubsubA.test instanceof EE).to.be.true
-      })
-    })
-
-    describe('pubsubInstance.testEvents:', () => {
-      it('success', () => {
-        expect(pubsubA.testEvents).to.exist
-        expect(pubsubA.testEvents.length).to.eql(4)
-        expect(R.contains(SUBSCRIBE_EVENT, pubsubA.testEvents)).to.be.true
-        expect(R.contains(UNSUBSCRIBE_EVENT, pubsubA.testEvents)).to.be.true
-        expect(R.contains(PUBLISH_EVENT, pubsubA.testEvents)).to.be.true
-        expect(R.contains(RECEIVE_EVENT, pubsubA.testEvents)).to.be.true
-      })
-    })
-  })
-
-  describe('pubsubInstance.test log events:', () => {
+  describe('events:', () => {
     describe(`${SUBSCRIBE_EVENT}:`, () => {
       it('success', (done) => {
         let counter = 0
@@ -102,14 +84,14 @@ describe('Pubsub.test:', () => {
           counter++
         }
 
-        pubsubA.test.on(SUBSCRIBE_EVENT, validateEvent)
+        loggerA.on(SUBSCRIBE_EVENT, validateEvent)
         expect(counter).to.equal(0)
 
         pubsubA.subscribe(topicA)
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(SUBSCRIBE_EVENT, validateEvent)
+          loggerA.removeListener(SUBSCRIBE_EVENT, validateEvent)
           done()
         }, 100)
       })
@@ -136,7 +118,7 @@ describe('Pubsub.test:', () => {
           counter++
         }
 
-        pubsubA.test.on(PUBLISH_EVENT, validateEvent)
+        loggerA.on(PUBLISH_EVENT, validateEvent)
 
         expect(counter).to.equal(0)
 
@@ -144,7 +126,7 @@ describe('Pubsub.test:', () => {
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(PUBLISH_EVENT, validateEvent)
+          loggerA.removeListener(PUBLISH_EVENT, validateEvent)
           done()
         }, 100)
       })
@@ -171,14 +153,14 @@ describe('Pubsub.test:', () => {
           counter++
         }
 
-        pubsubA.test.on(RECEIVE_EVENT, validateEvent)
+        loggerA.on(RECEIVE_EVENT, validateEvent)
         expect(counter).to.equal(0)
 
         pubsubA.publish(topicA, new Buffer('Hi!'))
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(RECEIVE_EVENT, validateEvent)
+          loggerA.removeListener(RECEIVE_EVENT, validateEvent)
           done()
         }, 500)
       })
@@ -203,13 +185,13 @@ describe('Pubsub.test:', () => {
         }
 
         expect(counter).to.equal(0)
-        pubsubA.test.on(UNSUBSCRIBE_EVENT, validateEvent)
+        loggerA.on(UNSUBSCRIBE_EVENT, validateEvent)
 
         pubsubA.unsubscribe(topicA)
 
         setTimeout(() => {
           expect(counter).to.equal(1)
-          pubsubA.test.removeListener(UNSUBSCRIBE_EVENT, validateEvent)
+          loggerA.removeListener(UNSUBSCRIBE_EVENT, validateEvent)
           done()
         }, 100)
       })

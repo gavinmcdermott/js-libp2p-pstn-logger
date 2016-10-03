@@ -7,7 +7,7 @@ const TestNode = require('libp2p-pstn-node')
 // Note: require('libp2p-floodsub') throws: Cannot find module 'libp2p-floodsub'
 const PS = require('./../node_modules/libp2p-floodsub/src')
 
-const addTestLog = require('./../src')
+const Logger = require('./../src')
 const keys = require('./fixtures/keys').keys
 const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
 
@@ -15,13 +15,15 @@ const NUM_NODES = 2
 
 const mapIndexed = R.addIndex(R.map)
 
-describe(`Multiple Pubsub.test's:`, () => {
+describe(`Multiple Loggers:`, () => {
   let nodeA
   let nodeAid
+  let loggerA
   let pubsubA
 
   let nodeB
   let nodeBid
+  let loggerB
   let pubsubB
 
   const topicOne = 'Topic One'
@@ -29,6 +31,7 @@ describe(`Multiple Pubsub.test's:`, () => {
 
   let nodes = []
   let pubsubs = []
+  let loggers = []
 
   let nodeCount = R.range(0, NUM_NODES)
 
@@ -50,18 +53,22 @@ describe(`Multiple Pubsub.test's:`, () => {
       nodes.push(testNode)
 
       let pubsub = PS(testNode.libp2p)
-      addTestLog(pubsub, testNode.peerInfo.id.toB58String())
       pubsubs.push(pubsub)
+
+      let logger = new Logger(pubsub, testNode.peerInfo.id.toB58String())
+      loggers.push(logger)
 
       return testNode.start()
     }, nodeCount)
 
     nodeA = nodes[0]
     pubsubA = pubsubs[0]
+    loggerA = loggers[0]
     nodeAid = nodeA.peerInfo.id.toB58String()
 
     nodeB = nodes[1]
     pubsubB = pubsubs[1]
+    loggerB = loggers[1]
     nodeBid = nodeB.peerInfo.id.toB58String()
 
     Promise.all(startFns)
@@ -70,7 +77,7 @@ describe(`Multiple Pubsub.test's:`, () => {
       })
   })
 
-  describe('2 Pubsubs (A, B):', () => {
+  describe('2 Loggers (A, B):', () => {
 
     before((done) => {
       // use a timeout so you don't skip ahead before swarm does its dials
@@ -109,8 +116,8 @@ describe(`Multiple Pubsub.test's:`, () => {
 
         const validateEventB = () => counterB++
 
-        pubsubA.test.on(SUBSCRIBE_EVENT, validateEventA)
-        pubsubB.test.on(SUBSCRIBE_EVENT, validateEventB)
+        loggerA.on(SUBSCRIBE_EVENT, validateEventA)
+        loggerB.on(SUBSCRIBE_EVENT, validateEventB)
 
         pubsubA.subscribe(topicOne)
 
@@ -125,8 +132,8 @@ describe(`Multiple Pubsub.test's:`, () => {
           expect(R.values(peersB).length).to.equal(1)
           expect(peerAinB.topics).to.eql([topicOne])
 
-          pubsubA.test.removeListener(SUBSCRIBE_EVENT, validateEventA)
-          pubsubB.test.removeListener(SUBSCRIBE_EVENT, validateEventB)
+          loggerA.removeListener(SUBSCRIBE_EVENT, validateEventA)
+          loggerB.removeListener(SUBSCRIBE_EVENT, validateEventB)
 
           done()
         }, 500)
@@ -153,7 +160,7 @@ describe(`Multiple Pubsub.test's:`, () => {
           counterA++
         }
 
-        pubsubA.test.on(RECEIVE_EVENT, validateReceiptInA)
+        loggerA.on(RECEIVE_EVENT, validateReceiptInA)
 
         // A is subscribed to this topic
         R.forEach(() => {
@@ -171,7 +178,7 @@ describe(`Multiple Pubsub.test's:`, () => {
 
         setTimeout(() => {
           expect(counterA).to.equal(4)
-          pubsubA.test.removeListener(RECEIVE_EVENT, validateReceiptInA)
+          loggerA.removeListener(RECEIVE_EVENT, validateReceiptInA)
           done()
         }, 500)
       })
@@ -210,8 +217,8 @@ describe(`Multiple Pubsub.test's:`, () => {
           counterB++
         }
 
-        pubsubA.test.on(PUBLISH_EVENT, validatePublishInA)
-        pubsubB.test.on(PUBLISH_EVENT, validatePublishInB)
+        loggerA.on(PUBLISH_EVENT, validatePublishInA)
+        loggerB.on(PUBLISH_EVENT, validatePublishInB)
 
         R.forEach(() => {
           pubsubA.publish(topicOne, `${topicOne} from A`)
@@ -227,8 +234,8 @@ describe(`Multiple Pubsub.test's:`, () => {
           expect(counterA).to.equal(4)
           expect(counterB).to.equal(4)
 
-          pubsubA.test.removeListener(PUBLISH_EVENT, validatePublishInA)
-          pubsubB.test.removeListener(PUBLISH_EVENT, validatePublishInB)
+          loggerA.removeListener(PUBLISH_EVENT, validatePublishInA)
+          loggerB.removeListener(PUBLISH_EVENT, validatePublishInB)
 
           done()
         }, 500)
@@ -254,8 +261,8 @@ describe(`Multiple Pubsub.test's:`, () => {
 
         const validateEventB = () => counterB++
 
-        pubsubA.test.on(UNSUBSCRIBE_EVENT, validateEventA)
-        pubsubB.test.on(UNSUBSCRIBE_EVENT, validateEventB)
+        loggerA.on(UNSUBSCRIBE_EVENT, validateEventA)
+        loggerB.on(UNSUBSCRIBE_EVENT, validateEventB)
 
         pubsubA.unsubscribe(topicOne)
 
@@ -270,8 +277,8 @@ describe(`Multiple Pubsub.test's:`, () => {
           expect(R.values(peersB).length).to.equal(1)
           expect(peerAinB.topics).to.eql([])
 
-          pubsubA.test.removeListener(UNSUBSCRIBE_EVENT, validateEventA)
-          pubsubB.test.removeListener(UNSUBSCRIBE_EVENT, validateEventB)
+          loggerA.removeListener(UNSUBSCRIBE_EVENT, validateEventA)
+          loggerB.removeListener(UNSUBSCRIBE_EVENT, validateEventB)
 
           done()
         }, 500)
@@ -313,7 +320,7 @@ describe(`Multiple Pubsub.test's:`, () => {
           counterA++
         }
 
-        pubsubA.test.on(RECEIVE_EVENT, validateReceiptInA)
+        loggerA.on(RECEIVE_EVENT, validateReceiptInA)
 
         // Pubsub A
         R.forEach(() => {
@@ -335,7 +342,7 @@ describe(`Multiple Pubsub.test's:`, () => {
 
         setTimeout(() => {
           expect(counterA).to.equal(topicPubCount)
-          pubsubA.test.removeListener(RECEIVE_EVENT, validateReceiptInA)
+          loggerA.removeListener(RECEIVE_EVENT, validateReceiptInA)
           done()
         }, 500)
       })
