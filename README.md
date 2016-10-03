@@ -14,20 +14,23 @@ To install through npm:
 
 `libp2p-pstn-logger` is built to work with [this early implementation of libp2p pubsub](https://github.com/libp2p/js-libp2p-floodsub). It simply proxies a Pubsub instance's function calls and adds the new log events necessary for the testnet benchmark tools.
 
-It logs using [this debug module](https://github.com/visionmedia/debug) seen commonly in the `js-libp2p` ecosystem. 
+It logs using [`debug`](https://github.com/visionmedia/debug) seen commonly in the `js-libp2p` ecosystem. 
 
 ```JavaScript
 const Pubsub = require('libp2p-floodsub')
 const libp2p = require('libp2p-ipfs')
+const addLogger = require('libp2p-pstn-logger')
 
 const p2p = new libp2p.Node(<somePeerInfo>)
 const pubsub = PS(p2p)
 
-// If you want to work with a logger instance, simply create one.
-// Otherwise it will proxy and log the important pubsub events
+// Now just proxy and log the important pubsub events by calling the fn
+addLogger(pubsub, p2p.peerInfo.id.toB58String())
 
-const logger = new Logger(pubsub, p2p.peerInfo.id.toB58String())
-logger.on('publish', <your handler>)
+// Or if you want to work with a logger instance, simply create one.
+// const logger = addLogger(pubsub, p2p.peerInfo.id.toB58String())
+// ...
+// logger.on('publish', <your handler>)
 ```
 
 ### Proxied Pubsub Log Events
@@ -43,10 +46,10 @@ The proxied `pubsub` instance will now log the following events:
 
 Logger instances will receive these events:
 
-- `pubsub.test.on('publish', <handler>)`
-- `pubsub.test.on('receive', <handler>)` 
-- `pubsub.test.on('subscribe', <handler>)`
-- `pubsub.test.on('unsubscribe', <handler>)`
+- `logger.on('publish', <handler>)`
+- `logger.on('receive', <handler>)` 
+- `logger.on('subscribe', <handler>)`
+- `logger.on('unsubscribe', <handler>)`
 
 ### Logger Instance Event Structure
 
@@ -75,9 +78,23 @@ Test log events are JSON objects structured as follows:
 
 ## Tests
 
-To run the tests:
+To run the basic tests:
 
-`> npm test`
+```sh
+> npm test
+```
+
+To test that the `debug` log file builds properly:
+
+```sh
+> npm run test:log
+```
+
+To show the `debug` logs:
+
+```sh
+> npm run test:debug
+```
 
 ## Contribute
 
