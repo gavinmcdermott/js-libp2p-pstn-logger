@@ -9,7 +9,7 @@ const PS = require('./../node_modules/libp2p-floodsub/src')
 
 const addLogger = require('./../src')
 const keys = require('./fixtures/keys').keys
-const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
+const { PUBLISH_EVENT, RECEIVE_EVENT } = require('./../src/config')
 
 const NUM_NODES = 2
 

@@ -9,7 +9,7 @@ const R = require('ramda')
 
 const keys = require('./fixtures/keys').keys
 const addLogger = require('./../src')
-const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
+const { PUBLISH_EVENT, RECEIVE_EVENT } = require('./../src/config')
 
 const NUM_NODES = 1
 
