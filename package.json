@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha -t 60000 test/**/*.spec.js",
     "test:debug": "DEBUG=pstn:logger* mocha -t 60000 test/**/*.spec.js",
-    "test:log": "DEBUG=pstn:logger* mocha -t 60000 test/**/*.spec.js 2> test/test-log/pstn.log"
+    "test:log": "DEBUG=pstn:logger* mocha -t 60000 test/**/*.spec.js 2> test/test-logs/log.log"
   },
   "repository": {
     "type": "git",

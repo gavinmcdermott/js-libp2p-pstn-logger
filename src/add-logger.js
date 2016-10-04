@@ -19,9 +19,10 @@ module.exports = function addLogger (pubsub, id) {
   const logger = new EE()
 
   // Important Note:
-  // 'emit' is currently pubsub's receive event - the pubsub event emitter is
+  // - 'emit' is currently pubsub's receive event - the pubsub event emitter is
   // called when a message is received for a topic the pubsub node is interested in
-  const pubsubProxyFns = ['publish', 'subscribe', 'unsubscribe', 'emit']
+  // - we also leave out calls to subscribe and unsubscribe currently
+  const pubsubProxyFns = ['publish', 'emit']
 
   const proxyMap = R.map((fnName) => {
     const fn = fnName
@@ -32,12 +33,6 @@ module.exports = function addLogger (pubsub, id) {
         break
       case 'emit':
         type = RECEIVE_EVENT
-        break
-      case 'subscribe':
-        type = SUBSCRIBE_EVENT
-        break
-      case 'unsubscribe':
-        type = UNSUBSCRIBE_EVENT
         break
       default:
         throw new LoggerError(`Unrecognized function to proxy: ${fnName}`)
@@ -56,10 +51,16 @@ module.exports = function addLogger (pubsub, id) {
         args
       }
 
-      if (R.isNil(args[1])) {
-        log(type, id, args[0])
+      let msg = args[1]
+      let topic = args[0]
+
+      if (R.isNil(msg)) {
+        log(type, id, topic)
       } else {
-        log(type, id, args[0], args[1])
+        if (!(msg instanceof Buffer)) {
+          msg = new Buffer(msg)
+        }
+        log(type, id, topic, msg)
       }
 
       // If using the eventEmitter

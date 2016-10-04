@@ -96,47 +96,19 @@ describe(`Multiple Loggers:`, () => {
     })
 
     describe(`Single topic (${topicOne}):`, () => {
-      it(`'${SUBSCRIBE_EVENT}' event only emitted by the subscribing node`, (done) => {
-        let counterA = 0
-        let counterB = 0
 
-        const validateEventA = (data) => {
-          const type = data.type
-          const source = data.source
-          const topic = data.args[0]
-          const timestamp = data.timestamp
-
-          expect(source).to.equal(nodeAid)
-          expect(type).to.equal(SUBSCRIBE_EVENT)
-          expect(topic).to.equal(topicOne)
-          expect(timestamp).to.exist
-
-          counterA++
-        }
-
-        const validateEventB = () => counterB++
-
-        loggerA.on(SUBSCRIBE_EVENT, validateEventA)
-        loggerB.on(SUBSCRIBE_EVENT, validateEventB)
-
-        pubsubA.subscribe(topicOne)
-
+      before((done) => {
         setTimeout(() => {
-          // ensure the logger works
-          expect(counterA).to.equal(1)
-          expect(counterB).to.equal(0)
-
-          // ensure the call was proxied correctly
-          const peersB = pubsubB.getPeerSet()
-          const peerAinB = peersB[nodeAid]
-          expect(R.values(peersB).length).to.equal(1)
-          expect(peerAinB.topics).to.eql([topicOne])
-
-          loggerA.removeListener(SUBSCRIBE_EVENT, validateEventA)
-          loggerB.removeListener(SUBSCRIBE_EVENT, validateEventB)
-
           done()
-        }, 500)
+          pubsubA.subscribe(topicOne)
+        }, 200)
+      })
+
+      after((done) => {
+        setTimeout(() => {
+          done()
+          pubsubA.unsubscribe(topicOne)
+        }, 200)
       })
 
       it(`'${RECEIVE_EVENT}' events emitted when receiving publications on relevant topics from all nodes (self included)`, (done) => {
@@ -240,49 +212,6 @@ describe(`Multiple Loggers:`, () => {
           done()
         }, 500)
       })
-
-      it(`'${UNSUBSCRIBE_EVENT}' event only emitted by the unsubscribing node`, (done) => {
-        let counterA = 0
-        let counterB = 0
-
-        const validateEventA = (data) => {
-          const type = data.type
-          const source = data.source
-          const topic = data.args[0]
-          const timestamp = data.timestamp
-
-          expect(source).to.equal(nodeAid)
-          expect(type).to.equal(UNSUBSCRIBE_EVENT)
-          expect(topic).to.equal(topicOne)
-          expect(timestamp).to.exist
-
-          counterA++
-        }
-
-        const validateEventB = () => counterB++
-
-        loggerA.on(UNSUBSCRIBE_EVENT, validateEventA)
-        loggerB.on(UNSUBSCRIBE_EVENT, validateEventB)
-
-        pubsubA.unsubscribe(topicOne)
-
-        setTimeout(() => {
-          // ensure the logger works
-          expect(counterA).to.equal(1)
-          expect(counterB).to.equal(0)
-
-          // ensure the call was proxied correctly
-          const peersB = pubsubB.getPeerSet()
-          const peerAinB = peersB[nodeAid]
-          expect(R.values(peersB).length).to.equal(1)
-          expect(peerAinB.topics).to.eql([])
-
-          loggerA.removeListener(UNSUBSCRIBE_EVENT, validateEventA)
-          loggerB.removeListener(UNSUBSCRIBE_EVENT, validateEventB)
-
-          done()
-        }, 500)
-      })
     })
 
     describe(`Multiple topics (${topicOne}, ${topicTwo}):`, () => {
@@ -324,7 +253,7 @@ describe(`Multiple Loggers:`, () => {
 
         // Pubsub A
         R.forEach(() => {
-          pubsubA.publish(topicOne, `${topicOne} from A`)
+          pubsubA.publish(topicOne, `${topicOne} from A and this is a much longer message`)
         }, R.range(0, topicOneAPubs))
 
         R.forEach(() => {
@@ -333,7 +262,7 @@ describe(`Multiple Loggers:`, () => {
 
         // Pubsub B
         R.forEach(() => {
-          pubsubB.publish(topicOne, '${topicOne} from B')
+          pubsubB.publish(topicOne, `${topicOne} from B`)
         }, R.range(0, topicOneBPubs))
 
         R.forEach(() => {
@@ -346,7 +275,6 @@ describe(`Multiple Loggers:`, () => {
           done()
         }, 500)
       })
-
     })
   })
 })

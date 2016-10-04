@@ -1,0 +1,46 @@
+Tue, 04 Oct 2016 03:46:55 GMT pstn:logger publish QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE TOPIC_ONE from A
+Tue, 04 Oct 2016 03:46:55 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE TOPIC_ONE from A
+Tue, 04 Oct 2016 03:46:55 GMT pstn:logger publish QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE TOPIC_ONE from A
+Tue, 04 Oct 2016 03:46:55 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE TOPIC_ONE from A
+Tue, 04 Oct 2016 03:46:55 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE <Buffer 54 4f 50 49 43 5f 4f 4e 45 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:55 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE <Buffer 54 4f 50 49 43 5f 4f 4e 45 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_TWO TOPIC_TWO from A
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_TWO TOPIC_TWO from A
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE TOPIC_TWO from C
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE TOPIC_TWO from C
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE TOPIC_TWO from C
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE TOPIC_TWO from C
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE ${ONE} from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE ${ONE} from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE ${ONE} from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE ${ONE} from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO TOPIC_TWO from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO TOPIC_TWO from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger publish QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO TOPIC_TWO from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO TOPIC_TWO from B
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_TWO <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 41>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmeJsjN4efh7Y5HKYq28LaHMjKNtRSDJpwamAwP94VTobs TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmUnUBoTKPBvwwWBG8X3LDnrNNm2M7BNnNzZULNJenFBhc TOPIC_ONE <Buffer 54 4f 50 49 43 5f 54 57 4f 20 66 72 6f 6d 20 43>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
+Tue, 04 Oct 2016 03:46:56 GMT pstn:logger receive QmTGB6sUscUxv7DBbKfFMrDaMcwxJUgjDdwHUdS8vkxtJn TOPIC_ONE <Buffer 24 7b 4f 4e 45 7d 20 66 72 6f 6d 20 42>
