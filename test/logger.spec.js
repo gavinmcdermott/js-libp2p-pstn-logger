@@ -93,7 +93,7 @@ describe('Logger:', () => {
 
         expect(counter).to.equal(0)
 
-        pubsubA.publish(topicA, new Buffer('Hey!'))
+        pubsubA.publish(topicA, 'Hey!')
 
         setTimeout(() => {
           expect(counter).to.equal(1)
@@ -127,7 +127,7 @@ describe('Logger:', () => {
         loggerA.on(RECEIVE_EVENT, validateEvent)
         expect(counter).to.equal(0)
 
-        pubsubA.publish(topicA, new Buffer('Hi!'))
+        pubsubA.publish(topicA, 'Hi!')
 
         setTimeout(() => {
           expect(counter).to.equal(1)

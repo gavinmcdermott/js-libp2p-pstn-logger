@@ -51,17 +51,13 @@ module.exports = function addLogger (pubsub, id) {
         args
       }
 
-      let msg = args[1]
-      let topic = args[0]
+      const rawTopic = args[0] ? args[0] : ''
+      const rawMsg = args[1] ? args[1] : ''
 
-      if (R.isNil(msg)) {
-        log(type, id, topic)
-      } else {
-        if (!(msg instanceof Buffer)) {
-          msg = new Buffer(msg)
-        }
-        log(type, id, topic, msg)
-      }
+      const topic = new Buffer(rawTopic).toString('base64')
+      const msg = new Buffer(rawMsg).toString('base64')
+
+      log(type, id, topic, msg)
 
       // If using the eventEmitter
       logger.emit(type, data)
