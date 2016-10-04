@@ -42,8 +42,6 @@ The proxied `pubsub` instance will now log the following events:
 
 - `<timestamp> pstn:logger publish ...`
 - `<timestamp> pstn:logger receive ...`
-- `<timestamp> pstn:logger subscribe ...`
-- `<timestamp> pstn:logger unsubscribe ...`
 
 ### Logger Instance Events
 
@@ -51,8 +49,6 @@ Logger instances will receive these events:
 
 - `logger.on('publish', <handler>)`
 - `logger.on('receive', <handler>)` 
-- `logger.on('subscribe', <handler>)`
-- `logger.on('unsubscribe', <handler>)`
 
 ### Logger Instance Event Structure
 
@@ -74,10 +70,6 @@ Test log events are JSON objects structured as follows:
 #### `logger.on('publish', <handler>)`
 
 #### `logger.on('receive', <handler>)`
-
-#### `logger.on('subscribe', <handler>)`
-
-#### `logger.on('unsubscribe', <handler>)`
 
 ## Tests
 
