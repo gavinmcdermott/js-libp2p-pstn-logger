@@ -4,7 +4,7 @@ const R = require('ramda')
 const EE = require('events').EventEmitter
 const TestNode = require('libp2p-pstn-node')
 
-const { log, PUBLISH_EVENT, RECEIVE_EVENT } = require('./config')
+const { log, PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./config')
 const { LoggerError } = require('./errors')
 
 module.exports = function addLogger (pubsub, id) {
@@ -21,18 +21,23 @@ module.exports = function addLogger (pubsub, id) {
   // Important Note:
   // - 'emit' is currently pubsub's receive event - the pubsub event emitter is
   // called when a message is received for a topic the pubsub node is interested in
-  // - we also leave out calls to subscribe and unsubscribe currently
-  const pubsubProxyFns = ['publish', 'emit']
+  const pubsubProxyFns = ['publish', 'emit', 'subscribe', 'unsubscribe']
 
   const proxyMap = R.map((fnName) => {
     const fn = fnName
     let type
     switch (fnName) {
-      case 'publish':
+      case PUBLISH_EVENT:
         type = PUBLISH_EVENT
         break
-      case 'emit':
+      case 'emit':  // a.k.a. receive
         type = RECEIVE_EVENT
+        break
+      case SUBSCRIBE_EVENT:
+        type = SUBSCRIBE_EVENT
+        break
+      case UNSUBSCRIBE_EVENT:
+        type = UNSUBSCRIBE_EVENT
         break
       default:
         throw new LoggerError(`Unrecognized function to proxy: ${fnName}`)

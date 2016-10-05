@@ -9,7 +9,7 @@ const R = require('ramda')
 
 const keys = require('./fixtures/keys').keys
 const addLogger = require('./../src')
-const { PUBLISH_EVENT, RECEIVE_EVENT } = require('./../src/config')
+const { PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./../src/config')
 
 const NUM_NODES = 1
 
@@ -54,7 +54,7 @@ describe('Logger:', () => {
     nodeAid = nodeA.peerInfo.id.toB58String()
 
     Promise.all(startFns).then(() => {
-      pubsubA.subscribe(topicA)
+      // pubsubA.subscribe(topicA)
       setTimeout(done, 1000)
     })
   })
@@ -68,6 +68,37 @@ describe('Logger:', () => {
   })
 
   describe('events:', () => {
+    describe(`${SUBSCRIBE_EVENT}:`, () => {
+      it('success', (done) => {
+        let counter = 0
+
+        const validateEvent = (data) => {
+          const type = data.type
+          const source = data.source
+          const topic = data.args[0]
+          const timestamp = data.timestamp
+
+          expect(source).to.equal(nodeAid)
+          expect(type).to.equal(SUBSCRIBE_EVENT)
+          expect(topic).to.equal(topicA)
+          expect(timestamp).to.exist
+
+          counter++
+        }
+
+        loggerA.on(SUBSCRIBE_EVENT, validateEvent)
+        expect(counter).to.equal(0)
+
+        pubsubA.subscribe(topicA)
+
+        setTimeout(() => {
+          expect(counter).to.equal(1)
+          loggerA.removeListener(SUBSCRIBE_EVENT, validateEvent)
+          done()
+        }, 100)
+      })
+    })
+
     describe(`${PUBLISH_EVENT}:`, () => {
       it('success', (done) => {
         let counter = 0
@@ -134,6 +165,37 @@ describe('Logger:', () => {
           loggerA.removeListener(RECEIVE_EVENT, validateEvent)
           done()
         }, 500)
+      })
+    })
+
+    describe(`${UNSUBSCRIBE_EVENT}:`, () => {
+      it('success', (done) => {
+        let counter = 0
+
+        const validateEvent = (data) => {
+          const type = data.type
+          const source = data.source
+          const topic = data.args[0]
+          const timestamp = data.timestamp
+
+          expect(source).to.equal(nodeAid)
+          expect(type).to.equal(UNSUBSCRIBE_EVENT)
+          expect(topic).to.equal(topicA)
+          expect(timestamp).to.exist
+
+          counter++
+        }
+
+        expect(counter).to.equal(0)
+        loggerA.on(UNSUBSCRIBE_EVENT, validateEvent)
+
+        pubsubA.unsubscribe(topicA)
+
+        setTimeout(() => {
+          expect(counter).to.equal(1)
+          loggerA.removeListener(UNSUBSCRIBE_EVENT, validateEvent)
+          done()
+        }, 100)
       })
     })
   })
