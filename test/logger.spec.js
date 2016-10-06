@@ -4,8 +4,11 @@ const expect = require('chai').expect
 const EE = require('events').EventEmitter
 // Note: require('libp2p-floodsub') throws: Cannot find module 'libp2p-floodsub'
 const PS = require('./../node_modules/libp2p-floodsub/src')
-const TestNode = require('libp2p-pstn-node')
 const R = require('ramda')
+const libp2p = require('libp2p-ipfs')
+const multiaddr = require('multiaddr')
+const PeerId = require('peer-id')
+const PeerInfo = require('peer-info')
 
 const keys = require('./fixtures/keys').keys
 const addLogger = require('./../src')
@@ -29,13 +32,26 @@ describe('Logger:', () => {
 
   const topicA = 'Topic A'
 
-  const validNode = new TestNode({ id: keys[0], portOffset: 0 })
-
   const nodeCount = R.range(0, NUM_NODES)
 
   before((done) => {
     const startFns = mapIndexed((n, idx) => {
-      let testNode = new TestNode({ id: keys[idx], portOffset: idx })
+      let privKey = keys[idx].privKey
+
+      // Peer info
+      let peerId = PeerId.createFromPrivKey(privKey)
+      let peerInstance = new PeerInfo(peerId)
+      let peerAddr1 = multiaddr(`/ip4/127.0.0.1/tcp/${12000+idx}/ipfs/${peerInstance.id.toB58String()}`)
+      peerInstance.multiaddr.add(peerAddr1)
+
+      // Libp2p info
+      let libp2pInstance = new libp2p.Node(peerInstance)
+
+      // The network node instance
+      let testNode = {
+        peerInfo: peerInstance,
+        libp2p: libp2pInstance,
+      }
       nodes.push(testNode)
 
       let pubsub = PS(testNode.libp2p)
@@ -44,7 +60,7 @@ describe('Logger:', () => {
       let logger = addLogger(pubsub, testNode.peerInfo.id.toB58String())
       loggers.push(logger)
 
-      return testNode.start()
+      return testNode.libp2p.start(noop)
     }, nodeCount)
 
     nodeA = R.head(nodes)

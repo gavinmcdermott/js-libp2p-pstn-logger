@@ -2,7 +2,6 @@
 
 const R = require('ramda')
 const EE = require('events').EventEmitter
-const TestNode = require('libp2p-pstn-node')
 
 const { log, PUBLISH_EVENT, RECEIVE_EVENT, SUBSCRIBE_EVENT, UNSUBSCRIBE_EVENT } = require('./config')
 const { LoggerError } = require('./errors')
